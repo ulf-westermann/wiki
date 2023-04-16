@@ -26,7 +26,11 @@ app = fastapi.FastAPI()
 async def get_sources():
     """get list of source page names"""
     source_path = pathlib.Path(SOURCES_DIR)
-    sources = source_path.glob("*.md")
+    sources = []
+    sources.extend(source_path.glob("*.md"))
+    sources.extend(source_path.glob("*.rst"))
+    sources.extend(source_path.glob("*.txt"))
+    sources.extend(source_path.glob("*.html"))
     return [source.name for source in sources]
 
 
@@ -74,6 +78,8 @@ async def put_source(name: str, source: SourcePage):
 
     if source_path.name == "manage.md": # manage.html is a special page
         raise fastapi.HTTPException(status_code=403, detail="not allowed")
+
+    # todo: allow only same file extension as used in get_sources?
 
     try:
         source_path.rename(source_path.parent / pathlib.Path(source_path.name + "_" + datetime.datetime.utcnow().isoformat() + ".backup"))

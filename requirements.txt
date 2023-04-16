@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+html-sanitizer
+mypy # only for development
+pylint # only for development

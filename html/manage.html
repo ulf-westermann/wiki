@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="nofollow">
+        <title>manage wiki</title>
+    </head>
+    <body>
+        <h1>manage</h1>
+
+        <p><span>
+            <button onclick="create_source()">new page</button> |
+            <select id="sources_list"></select> 
+            <button id="edit_button" onclick="edit_source()">edit</button>
+            <button id="delete_button" onclick="delete_source()">delete</button>
+            <button id="open_button" onclick="open_html()">open</button>
+        </span></p>
+
+        <p><textarea rows=22 id="edit_field" style="width:100%"></textarea></p>
+        <p><button id="save_button" onclick="save_source()">save</button></p>
+
+        <script>
+            window.onload = initialize();
+
+            // initialize page when loaded
+            function initialize() {
+                console.log("initialize()");
+
+                load_sources();
+
+                document.getElementById("edit_field").value = '- nothing to edit -';
+            }
+
+            // create new source page
+            function create_source() {
+
+                let source = prompt("source name", "*.md")
+
+                if (source != null) {
+                    json_data = JSON.stringify({"data": ""});
+
+                    fetch(`/api/sources/${source}`, {method: "PUT", headers: {"content-type": "application/json"}, body: json_data}).catch(err => console.log("fetch failed", err));
+                    load_sources();
+                }
+            }
+
+            // delete source (and html) file currently active in select box
+            function delete_source() {
+                console.log("delete_source()");
+
+                select = document.getElementById("sources_list");
+                source = select.options[select.selectedIndex].text;
+
+                fetch(`/api/sources/${source}`, {method: "DELETE"}).catch(err => console.log("fetch failed", err));
+
+                load_sources();
+            }
+
+            // edit source currently active in select box
+            function edit_source() {
+                console.log("edit_source()");
+
+                select = document.getElementById("sources_list");
+                source = select.options[select.selectedIndex].text;
+
+                fetch(`/api/sources/${source}`).then(response => response.json().then(data => {
+                    document.getElementById("edit_field").value = data;
+                })).catch(err => console.log("fetch failed", err));
+            }
+
+            // open html page corresponding to currently active source in select box
+            function open_html() {
+                console.log("open_html()");
+
+                select = document.getElementById("sources_list");
+                source = select.options[select.selectedIndex].text;
+
+                html_page = source.substr(0, source.lastIndexOf(".")) + ".html";
+
+                window.open(html_page)
+            }
+
+            // save edited source with name currently active in select box
+            function save_source() {
+                console.log("save_source()");
+
+                select = document.getElementById("sources_list");
+                source = select.options[select.selectedIndex].text;
+
+                json_data = JSON.stringify({"data": document.getElementById("edit_field").value});
+
+                console.log(json_data);
+
+                fetch(`/api/sources/${source}`, {method: "PUT", headers: {"content-type": "application/json"}, body: json_data}).catch(err => console.log("fetch failed", err));
+            }
+
+            // load list of sources and populate select box
+            function load_sources() {
+                fetch("/api/sources").then(response => response.json().then(data => {
+                    data.sort();
+
+                    let options = "";
+
+                    for (let i = 0; i< data.length; i++) {
+                        options += `<option>${data[i]}</option>`;
+                    }
+
+                    document.getElementById("sources_list").innerHTML = options;
+                })).catch(err => console.log("fetch failed", err));
+            }
+        </script>
+    </body>
+</html>

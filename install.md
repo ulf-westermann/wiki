@@ -1,6 +1,6 @@
 # Installation
 
-make sure python3, pip and virtualenv is installed
+make sure python3, pip, virtualenv and pandoc is installed. maybe some xml libaries also need to be installed for html sanitation.
 
 cd into wiki directory
 

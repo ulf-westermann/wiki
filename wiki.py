@@ -4,6 +4,10 @@ import pathlib
 import subprocess
 import datetime
 
+# todo: add put/delete of files into ./static/files directory, so that they can be referenced
+# in html pages (e.g. css, images)
+
+
 import uvicorn
 import fastapi
 import fastapi.staticfiles
@@ -17,7 +21,7 @@ class SourcePage(pydantic.BaseModel):
 
 
 SOURCES_DIR = "./sources"
-PAGES_DIR = "./html"
+PAGES_DIR = "./static"
 
 app = fastapi.FastAPI()
 
@@ -52,11 +56,9 @@ async def delete_source(name: str):
     html_path = pathlib.Path(PAGES_DIR).joinpath(name).with_suffix(".html")
 
     if not html_path.is_relative_to(pathlib.Path(PAGES_DIR)):
-        print(f"forbidden1: {html_path} not relative to {pathlib.Path(PAGES_DIR)}")
         raise fastapi.HTTPException(status_code=403, detail="not allowed")
 
     if html_path.name == "manage.html": # manage.html is special page
-        print(f"forbidden2: {html_path.name}")
         raise fastapi.HTTPException(status_code=403, detail="not allowed")
 
     source_path = pathlib.Path(SOURCES_DIR).joinpath(name)
@@ -79,7 +81,7 @@ async def put_source(name: str, source: SourcePage):
     if source_path.name == "manage.md": # manage.html is a special page
         raise fastapi.HTTPException(status_code=403, detail="not allowed")
 
-    # todo: allow only same file extension as used in get_sources?
+    # todo: restrict to same file extension as in get_sources?
 
     try:
         source_path.rename(source_path.parent / pathlib.Path(source_path.name + "_" + datetime.datetime.utcnow().isoformat() + ".backup"))
@@ -88,14 +90,13 @@ async def put_source(name: str, source: SourcePage):
 
     with open(source_path, "w", encoding="utf-8") as file:
         sanitized_html = html_sanitizer.Sanitizer().sanitize(source.data)
-        print(f"sanitized html: {sanitized_html}")
         file.write(sanitized_html)
 
     return _create_html_page(name, source_path)
 
 
 def _create_html_page(name: str, path: pathlib.Path) -> str:
-    result = subprocess.run(["pandoc", "--standalone", path], capture_output=True, check=True)
+    result = subprocess.run(["pandoc", "--standalone", "--to", "html5", path], capture_output=True, check=True, shell=False)
 
     html_data = result.stdout.decode("utf-8")
 
@@ -107,10 +108,12 @@ def _create_html_page(name: str, path: pathlib.Path) -> str:
     return html_data
 
 
+# make fastapi serve static (html) files
 app.mount("/", fastapi.staticfiles.StaticFiles(directory=PAGES_DIR, html=True), name="static")
 
 
 if __name__ == "__main__":
+    # start uvicorn webserver with reference to fastapi app
     config = uvicorn.Config("wiki:app", host="0.0.0.0", port=8081, log_level="info")
     server = uvicorn.Server(config)
     server.run()

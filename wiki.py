@@ -114,6 +114,6 @@ app.mount("/", fastapi.staticfiles.StaticFiles(directory=PAGES_DIR, html=True), 
 
 if __name__ == "__main__":
     # start uvicorn webserver with reference to fastapi app
-    config = uvicorn.Config("wiki:app", host="0.0.0.0", port=8081, log_level="info")
+    config = uvicorn.Config("wiki:app", host="127.0.0.1", port=8081, log_level="info")
     server = uvicorn.Server(config)
     server.run()

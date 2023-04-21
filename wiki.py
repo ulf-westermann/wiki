@@ -16,7 +16,7 @@ import pydantic
 import html_sanitizer
 
 
-class SourcePage(pydantic.BaseModel):
+class SourceData(pydantic.BaseModel):
     data : str
 
 
@@ -30,11 +30,13 @@ app = fastapi.FastAPI()
 async def get_sources():
     """get list of source page names"""
     source_path = pathlib.Path(SOURCES_DIR)
+
     sources = []
     sources.extend(source_path.glob("*.md"))
     sources.extend(source_path.glob("*.rst"))
     sources.extend(source_path.glob("*.txt"))
     sources.extend(source_path.glob("*.html"))
+
     return [source.name for source in sources]
 
 
@@ -70,8 +72,9 @@ async def delete_source(name: str):
     source_path.unlink()
 
 
-@app.put("/api/sources/{name}", response_class=fastapi.responses.HTMLResponse)
-async def put_source(name: str, source: SourcePage):
+#@app.put("/api/sources/{name}", response_class=fastapi.responses.HTMLResponse)
+@app.put("/api/sources/{name}")
+async def put_source(name: str, source: SourceData) -> None:
     """put source for a html page"""
     source_path = pathlib.Path(SOURCES_DIR) / name
 
@@ -81,7 +84,8 @@ async def put_source(name: str, source: SourcePage):
     if source_path.name == "manage.md": # manage.html is a special page
         raise fastapi.HTTPException(status_code=403, detail="not allowed")
 
-    # todo: restrict to same file extension as in get_sources?
+    if source_path.suffix not in (".md", ".rst", ".txt", ".html"):
+        raise fastapi.HTTPException(status_code=400, detail="file type not supported")
 
     try:
         source_path.rename(source_path.parent / pathlib.Path(source_path.name + "_" + datetime.datetime.utcnow().isoformat() + ".backup"))
@@ -92,20 +96,24 @@ async def put_source(name: str, source: SourcePage):
         sanitized_html = html_sanitizer.Sanitizer().sanitize(source.data)
         file.write(sanitized_html)
 
-    return _create_html_page(name, source_path)
+    if not _create_html_page(name, source_path):
+        raise fastapi.HTTPException(status_code=400, detail="error in source")
 
 
-def _create_html_page(name: str, path: pathlib.Path) -> str:
+def _create_html_page(name: str, path: pathlib.Path) -> bool:
     result = subprocess.run(["pandoc", "--standalone", "--to", "html5", path], capture_output=True, check=True, shell=False)
+
+    if result.returncode != 0:
+        return False
 
     html_data = result.stdout.decode("utf-8")
 
-    html_page_path = pathlib.Path(PAGES_DIR).joinpath(name).with_suffix(".html")
+    html_path = pathlib.Path(PAGES_DIR).joinpath(name).with_suffix(".html")
 
-    with open(html_page_path, "w", encoding="utf-8") as file:
+    with open(html_path, "w", encoding="utf-8") as file:
         file.write(html_data)
 
-    return html_data
+    return True
 
 
 # make fastapi serve static (html) files

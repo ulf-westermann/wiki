@@ -12,102 +12,140 @@
         <p><span>
             <button onclick="create_source()">new page</button> |
             <select id="sources_list"></select> 
-            <button id="edit_button" onclick="edit_source()">edit</button>
-            <button id="delete_button" onclick="delete_source()">delete</button>
-            <button id="open_button" onclick="open_html()">open</button>
+            <button id="edit_button">edit</button>
+            <button id="delete_button">delete</button>
+            <button id="open_button">open</button>
         </span></p>
 
-        <p><textarea rows=22 id="edit_field" style="width:100%"></textarea></p>
-        <p><button id="save_button" onclick="save_source()">save</button></p>
+        <p><textarea id="edit_field" rows="22" style="width:100%"></textarea></p>
+        <p>edit buffer loaded from: <span id="buffer_content">-</span></p>
+        <p><button id="save_button" onclick="save_source()">save</button><span id="saved_info"></span></p>
 
         <script>
+            document.getElementById("edit_button").addEventListener("click", edit_source);
+            document.getElementById("delete_button").addEventListener("click", delete_source);
+            document.getElementById("open_button").addEventListener("click", open_html);
+
             window.onload = initialize();
 
             // initialize page when loaded
             function initialize() {
-                console.log("initialize()");
+                console.log("initialize() called...");
 
                 load_sources();
 
-                document.getElementById("edit_field").value = '- nothing to edit -';
+                document.getElementById("edit_field").value = "";
+                document.getElementById("buffer_content").innerHTML = "-"
             }
 
             // create new source page
-            function create_source() {
+            async function create_source() {
+                console.log("create_source() called...");
 
-                let source = prompt("source name", "*.md")
+                const source = prompt("source name", "*.md")
 
                 if (source != null) {
-                    json_data = JSON.stringify({"data": ""});
+                    const json_source_data = JSON.stringify({"data": ""});
 
-                    fetch(`/api/sources/${source}`, {method: "PUT", headers: {"content-type": "application/json"}, body: json_data}).catch(err => console.log("fetch failed", err));
-                    load_sources();
+                    try {
+                        await fetch(`/api/sources/${source}`, {method: "PUT", headers: {"content-type": "application/json"}, body: json_source_data})
+                        load_sources();
+                    }
+                    catch (error) {
+                        console.log("fetch failed", error);
+                    }
                 }
             }
 
             // delete source (and html) file currently active in select box
-            function delete_source() {
-                console.log("delete_source()");
+            async function delete_source() {
+                console.log("delete_source() called...");
 
-                select = document.getElementById("sources_list");
-                source = select.options[select.selectedIndex].text;
+                const select = document.getElementById("sources_list");
+                const source = select.options[select.selectedIndex].text;
 
-                fetch(`/api/sources/${source}`, {method: "DELETE"}).catch(err => console.log("fetch failed", err));
-
-                load_sources();
+                try {
+                    await fetch(`/api/sources/${source}`, {method: "DELETE"});
+                    load_sources();
+                }
+                catch (error) {
+                    console.log("fetch failed", error);
+                }
             }
 
             // edit source currently active in select box
-            function edit_source() {
-                console.log("edit_source()");
+            async function edit_source() {
+                console.log("edit_source() called...");
 
-                select = document.getElementById("sources_list");
-                source = select.options[select.selectedIndex].text;
+                const select = document.getElementById("sources_list");
+                const source = select.options[select.selectedIndex].text;
 
-                fetch(`/api/sources/${source}`).then(response => response.json().then(data => {
-                    document.getElementById("edit_field").value = data;
-                })).catch(err => console.log("fetch failed", err));
+                try {
+                    const response = await fetch(`/api/sources/${source}`);
+                    const json_response = await response.json(); // should return a string
+
+                    document.getElementById("edit_field").value = json_response;
+                    document.getElementById("buffer_content").innerHTML = source;
+                }
+                catch (error) {
+                    console.log("fetch failed");
+                }
             }
 
             // open html page corresponding to currently active source in select box
             function open_html() {
-                console.log("open_html()");
+                console.log("open_html() called...");
 
-                select = document.getElementById("sources_list");
-                source = select.options[select.selectedIndex].text;
+                const select = document.getElementById("sources_list");
+                const source = select.options[select.selectedIndex].text;
 
-                html_page = source.substr(0, source.lastIndexOf(".")) + ".html";
+                const html_page = source.substr(0, source.lastIndexOf(".")) + ".html";
 
                 window.open(html_page)
             }
 
             // save edited source with name currently active in select box
-            function save_source() {
-                console.log("save_source()");
+            async function save_source() {
+                console.log("save_source() called...");
 
-                select = document.getElementById("sources_list");
-                source = select.options[select.selectedIndex].text;
+                const select = document.getElementById("sources_list");
+                const source = select.options[select.selectedIndex].text;
 
-                json_data = JSON.stringify({"data": document.getElementById("edit_field").value});
+                const json_source_data = JSON.stringify({"data": document.getElementById("edit_field").value});
 
-                console.log(json_data);
+                console.log(`json_source_data: ${json_source_data}`);
 
-                fetch(`/api/sources/${source}`, {method: "PUT", headers: {"content-type": "application/json"}, body: json_data}).catch(err => console.log("fetch failed", err));
+                try {
+                    const response = await fetch(`/api/sources/${source}`, {method: "PUT", headers: {"content-type": "application/json"}, body: json_source_data});
+                    if (response.status != 200) {
+                        console.log(`fetch failed with status code ${response.status}: ${response.statusText}`);
+                    }
+                }
+                catch (error) {
+                    console.log("fetch failed", error);
+                }
             }
 
             // load list of sources and populate select box
-            function load_sources() {
-                fetch("/api/sources").then(response => response.json().then(data => {
-                    data.sort();
+            async function load_sources() {
+                console.log("load_sources() called...");
+
+                try {
+                    const response = await fetch("/api/sources");
+                    const json_response = await response.json(); // should return a json array
+
+                    json_response.sort();
 
                     let options = "";
 
-                    for (let i = 0; i< data.length; i++) {
-                        options += `<option>${data[i]}</option>`;
+                    for (let i = 0; i< json_response.length; i++) {
+                        options += `<option>${json_response[i]}</option>`;
                     }
 
                     document.getElementById("sources_list").innerHTML = options;
-                })).catch(err => console.log("fetch failed", err));
+                } catch (error) {
+                    console.log("fetch failed", error);
+                }
             }
         </script>
     </body>

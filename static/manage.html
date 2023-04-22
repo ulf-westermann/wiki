@@ -32,10 +32,12 @@
             function initialize() {
                 console.log("initialize() called...");
 
+		// todo: reselect last sources in select box, if still valid, or delete content of textarea
                 load_sources();
 
                 document.getElementById("edit_field").value = "";
                 document.getElementById("buffer_content").innerHTML = "-"
+
             }
 
             // create new source page

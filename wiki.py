@@ -25,6 +25,7 @@ PAGES_DIR = "./static"
 
 app = fastapi.FastAPI()
 
+# todo: create (static?) and sources directory, if not present
 
 @app.get("/api/sources")
 async def get_sources():

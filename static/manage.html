@@ -32,11 +32,10 @@
             function initialize() {
                 console.log("initialize() called...");
 
-		// todo: reselect last sources in select box, if still valid, or delete content of textarea
                 load_sources();
 
                 document.getElementById("edit_field").value = "";
-                document.getElementById("buffer_content").innerHTML = "-"
+                document.getElementById("buffer_content").innerHTML = ""
 
             }
 
@@ -51,7 +50,7 @@
 
                     try {
                         await fetch(`/api/sources/${source}`, {method: "PUT", headers: {"content-type": "application/json"}, body: json_source_data})
-                        load_sources();
+                        load_sources(document.getElementById("buffer_content").innerHTML);
                     }
                     catch (error) {
                         console.log("fetch failed", error);
@@ -68,7 +67,7 @@
 
                 try {
                     await fetch(`/api/sources/${source}`, {method: "DELETE"});
-                    load_sources();
+                    load_sources(document.getElementById("buffer_content").innerHTML);
                 }
                 catch (error) {
                     console.log("fetch failed", error);
@@ -129,7 +128,7 @@
             }
 
             // load list of sources and populate select box
-            async function load_sources() {
+            async function load_sources(select_option) {
                 console.log("load_sources() called...");
 
                 try {
@@ -138,9 +137,6 @@
 
                     json_response.sort();
 
-                    let selected_index = document.getElementById("sources_list").selectedIndex;
-                    selected_index = selected_index = -1 ? 0 : selected_index;
-
                     let options = "";
 
                     for (let i = 0; i< json_response.length; i++) {
@@ -148,7 +144,18 @@
                     }
 
                     document.getElementById("sources_list").innerHTML = options;
-                    document.getElementById("sources_list").selectedIndex = selected_index;
+
+                    if (select_option != undefined) {
+                        options = document.getElementById("sources_list").options;
+                    
+                        for (let i = 0; i < options.length; i += 1) {
+                            if (select_option == options[i].value) {
+                                console.log(`selecting options: ${options[i].value}`);
+                                document.getElementById("sources_list").selectedIndex = i;
+                                break;
+                            }
+                        }
+                    }
                 } catch (error) {
                     console.log("fetch failed", error);
                 }

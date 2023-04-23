@@ -139,6 +139,8 @@
                     json_response.sort();
 
                     let selected_index = document.getElementById("sources_list").selectedIndex;
+                    selected_index = selected_index = -1 ? 0 : selected_index;
+
                     let options = "";
 
                     for (let i = 0; i< json_response.length; i++) {

@@ -15,6 +15,7 @@
             <button id="edit_button">edit</button>
             <button id="delete_button">delete</button>
             <button id="open_button">open</button>
+            | <span id="message"></span>
         </span></p>
 
         <p><textarea id="edit_field" rows="20" style="width:100%"></textarea></p>
@@ -36,7 +37,6 @@
 
                 document.getElementById("edit_field").value = "";
                 document.getElementById("buffer_content").innerHTML = ""
-
             }
 
             // create new source page
@@ -49,11 +49,19 @@
                     const json_source_data = JSON.stringify({"data": ""});
 
                     try {
-                        await fetch(`/api/sources/${source}`, {method: "PUT", headers: {"content-type": "application/json"}, body: json_source_data})
+                        response = await fetch(`/api/sources/${source}`, {method: "PUT", headers: {"content-type": "application/json"}, body: json_source_data})
+
+                        if (response.status == 200) {
+                            show_message(`created new source file "${source}"`);
+                        }
+                        else {
+                            show_message(`create failed failed (status code ${response.status}, "${response.statusText}")`);
+                        }
+
                         load_sources(document.getElementById("buffer_content").innerHTML);
                     }
                     catch (error) {
-                        console.log("fetch failed", error);
+                        show_message(`create failed with error "${error}"`);
                     }
                 }
             }
@@ -66,11 +74,19 @@
                 const source = select.options[select.selectedIndex].text;
 
                 try {
-                    await fetch(`/api/sources/${source}`, {method: "DELETE"});
+                    response = await fetch(`/api/sources/${source}`, {method: "DELETE"});
+
+                    if (response.status == 200) {
+                        show_message(`deleted "${source}"`);
+                    }
+                    else {
+                        show_message(`delete failed failed (status code ${response.status}, "${response.statusText}")`);
+                    }
+
                     load_sources(document.getElementById("buffer_content").innerHTML);
                 }
                 catch (error) {
-                    console.log("fetch failed", error);
+                    show_message(`delete failed with error "${error}"`);
                 }
             }
 
@@ -83,13 +99,21 @@
 
                 try {
                     const response = await fetch(`/api/sources/${source}`);
+
+                    if (response.status == 200) {
+                        show_message(`editing "${source}"`);
+                    }
+                    else {
+                        show_message(`edit failed failed (status code ${response.status}, "${response.statusText}")`);
+                    }
+
                     const json_response = await response.json(); // should return a string
 
                     document.getElementById("edit_field").value = json_response;
                     document.getElementById("buffer_content").innerHTML = source;
                 }
                 catch (error) {
-                    console.log("fetch failed");
+                    show_message(`edit failed with error "${error}"`);
                 }
             }
 
@@ -114,16 +138,18 @@
 
                 const json_source_data = JSON.stringify({"data": document.getElementById("edit_field").value});
 
-                console.log(`json_source_data: ${json_source_data}`);
-
                 try {
                     const response = await fetch(`/api/sources/${source}`, {method: "PUT", headers: {"content-type": "application/json"}, body: json_source_data});
-                    if (response.status != 200) {
-                        console.log(`fetch failed with status code ${response.status}: ${response.statusText}`);
+
+                    if (response.status == 200) {
+                        show_message(`saved as "${source}"`);
+                    }
+                    else {
+                        show_message(`save_source failed failed (status code ${response.status}, "${response.statusText}")`);
                     }
                 }
                 catch (error) {
-                    console.log("fetch failed", error);
+                    show_message(`save failed with error "${error}"`);
                 }
             }
 
@@ -133,6 +159,11 @@
 
                 try {
                     const response = await fetch("/api/sources");
+
+                    if (response.status != 200) {
+                        show_message(`load failed failed (status code ${response.status}, "${response.statusText}")`);
+                    }
+
                     const json_response = await response.json(); // should return a json array
 
                     json_response.sort();
@@ -150,15 +181,19 @@
                     
                         for (let i = 0; i < options.length; i += 1) {
                             if (select_option == options[i].value) {
-                                console.log(`selecting options: ${options[i].value}`);
                                 document.getElementById("sources_list").selectedIndex = i;
                                 break;
                             }
                         }
                     }
                 } catch (error) {
-                    console.log("fetch failed", error);
+                    show_message(`load failed with error "${error}"`);
                 }
+            }
+
+            function show_message(message) {
+                document.getElementById("message").innerHTML = message;
+                setTimeout(() => {document.getElementById("message").innerHTML = ""}, 4000);
             }
         </script>
     </body>

@@ -10,21 +10,25 @@
         <h1>manage</h1>
 
         <p><span>
-            <button onclick="create_source()">new page</button> |
+            <button id="new_button">new page</button> |
             <select id="sources_list"></select> 
             <button id="edit_button">edit</button>
             <button id="delete_button">delete</button>
+            <button id="save_button">save</button>
             <button id="open_button">open</button>
-            | <span id="message"></span>
         </span></p>
 
+        <p>info: <span id="message"></span></p>
+
         <p><textarea id="edit_field" rows="20" style="width:100%"></textarea></p>
-        <p>edit buffer loaded from: <span id="buffer_content">-</span></p>
-        <p><button id="save_button" onclick="save_source()">save</button><span id="saved_info"></span></p>
+
+        <p>edit buffer loaded from: <span id="buffer_content"></span></p>
 
         <script>
+            document.getElementById("new_button").addEventListener("click", create_source);
             document.getElementById("edit_button").addEventListener("click", edit_source);
             document.getElementById("delete_button").addEventListener("click", delete_source);
+            document.getElementById("save_button").addEventListener("click", save_source);
             document.getElementById("open_button").addEventListener("click", open_html);
 
             window.onload = initialize();
@@ -193,7 +197,7 @@
 
             function show_message(message) {
                 document.getElementById("message").innerHTML = message;
-                setTimeout(() => {document.getElementById("message").innerHTML = ""}, 4000);
+                //setTimeout(() => {document.getElementById("message").innerHTML = "-"}, 4000);
             }
         </script>
     </body>

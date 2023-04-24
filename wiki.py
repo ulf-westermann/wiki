@@ -94,7 +94,9 @@ async def put_source(name: str, source: SourceData) -> None:
         pass
 
     with open(source_path, "w", encoding="utf-8") as file:
-        sanitized_html = html_sanitizer.Sanitizer().sanitize(source.data)
+        #sanitized_html = html_sanitizer.Sanitizer({"keep_typographic_whitespace": True}).sanitize(source.data)
+        # todo: sanitizer removes whitespaces
+        sanitized_html = source.data
         file.write(sanitized_html)
 
     if not _create_html_page(name, source_path):

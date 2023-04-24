@@ -9,20 +9,19 @@
     <body>
         <h1>manage</h1>
 
-        <p><span>
-            <button id="new_button">new page</button> |
+        <span>
+            <button id="new_button">new</button> |
             <select id="sources_list"></select> 
             <button id="edit_button">edit</button>
             <button id="delete_button">delete</button>
             <button id="save_button">save</button>
             <button id="open_button">open</button>
-        </span></p>
+	</span><br/>
 
-        <p>info: <span id="message"></span></p>
+	<small>info: <span id="message"></span></small><br/>
+	<small>buffer loaded from: <span id="buffer_content"></span></small><br>
 
-        <p><textarea id="edit_field" rows="20" style="width:100%"></textarea></p>
-
-        <p>edit buffer loaded from: <span id="buffer_content"></span></p>
+        <textarea id="edit_field" rows="20" style="width:99%"></textarea>
 
         <script>
             document.getElementById("new_button").addEventListener("click", create_source);

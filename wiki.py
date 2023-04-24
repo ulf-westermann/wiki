@@ -1,19 +1,20 @@
 #! /usr/bin/env python3
 
+import argparse
+import datetime
 import pathlib
 import subprocess
-import datetime
 
 # todo: add put/delete of files into ./static/files directory, so that they can be referenced
 # in html pages (e.g. css, images)
 
 
-import uvicorn
 import fastapi
-import fastapi.staticfiles
 import fastapi.responses
+import fastapi.staticfiles
 import pydantic
-import html_sanitizer
+import uvicorn
+#import html_sanitizer
 
 
 class SourceData(pydantic.BaseModel):
@@ -23,9 +24,9 @@ class SourceData(pydantic.BaseModel):
 SOURCES_DIR = "./sources"
 PAGES_DIR = "./static"
 
+
 app = fastapi.FastAPI()
 
-# todo: create (static?) and sources directory, if not present
 
 @app.get("/api/sources")
 async def get_sources():
@@ -124,7 +125,17 @@ app.mount("/", fastapi.staticfiles.StaticFiles(directory=PAGES_DIR, html=True), 
 
 
 if __name__ == "__main__":
+    # create directories if not present
+    pathlib.Path(SOURCES_DIR).mkdir(exist_ok=True)
+    pathlib.Path(PAGES_DIR).mkdir(exist_ok=True)
+
+    # parse command line arguments
+    parser = argparse.ArgumentParser(description="pandoc based wiki")
+    parser.add_argument("-i", "--ip", type=str, default="127.0.0.1", help="listening address")
+    parser.add_argument("-p", "--port", type=int, default=8081, help="listening port")
+    args = parser.parse_args()
+
     # start uvicorn webserver with reference to fastapi app
-    config = uvicorn.Config("wiki:app", host="127.0.0.1", port=8081, log_level="info")
+    config = uvicorn.Config("wiki:app", host=args.ip, port=args.port, log_level="info")
     server = uvicorn.Server(config)
     server.run()

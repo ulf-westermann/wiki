@@ -16,12 +16,20 @@
             <button id="delete_button">delete</button>
             <button id="save_button">save</button>
             <button id="open_button">open</button>
-	</span><br/>
+	    </span><br/>
 
-	<small>info: <span id="message"></span></small><br/>
-	<small>buffer loaded from: <span id="buffer_content"></span></small><br>
+        <small>info: <span id="message"></span></small><br/>
+        <small>buffer loaded from: <span id="buffer_content"></span></small><br>
 
         <textarea id="edit_field" rows="20" style="width:99%"></textarea>
+
+        <hr />
+
+        <span>
+            <input id="file_input" type="file" multiple />
+            <button id="upload_button">upload</button>
+        <span><br/>
+
 
         <script>
             document.getElementById("new_button").addEventListener("click", create_source);
@@ -29,6 +37,7 @@
             document.getElementById("delete_button").addEventListener("click", delete_source);
             document.getElementById("save_button").addEventListener("click", save_source);
             document.getElementById("open_button").addEventListener("click", open_html);
+            document.getElementById("upload_button").addEventListener("click", upload_files);
 
             window.onload = initialize();
 
@@ -58,7 +67,7 @@
                             show_message(`created new source file "${source}"`);
                         }
                         else {
-                            show_message(`create failed failed (status code ${response.status}, "${response.statusText}")`);
+                            show_message(`create failed (status code ${response.status}, "${response.statusText}")`);
                         }
 
                         load_sources(document.getElementById("buffer_content").innerHTML);
@@ -83,7 +92,7 @@
                         show_message(`deleted "${source}"`);
                     }
                     else {
-                        show_message(`delete failed failed (status code ${response.status}, "${response.statusText}")`);
+                        show_message(`delete failed (status code ${response.status}, "${response.statusText}")`);
                     }
 
                     load_sources(document.getElementById("buffer_content").innerHTML);
@@ -107,7 +116,7 @@
                         show_message(`editing "${source}"`);
                     }
                     else {
-                        show_message(`edit failed failed (status code ${response.status}, "${response.statusText}")`);
+                        show_message(`edit failed (status code ${response.status}, "${response.statusText}")`);
                     }
 
                     const json_response = await response.json(); // should return a string
@@ -148,11 +157,38 @@
                         show_message(`saved as "${source}"`);
                     }
                     else {
-                        show_message(`save_source failed failed (status code ${response.status}, "${response.statusText}")`);
+                        show_message(`save failed (status code ${response.status}, "${response.statusText}")`);
                     }
                 }
                 catch (error) {
                     show_message(`save failed with error "${error}"`);
+                }
+            }
+
+            // upload multiple files
+            async function upload_files() {
+                console.log("upload_files() called...");
+
+                const file_data = new FormData();
+
+                try {
+                    file_list = document.getElementById("file_input").files;
+
+                    for (const file of file_list) {
+                        file_data.append("files", file);
+                    }
+
+                    const response = await fetch("/api/files", {method: "PUT", body: file_data});
+
+                    if (response.status == 200) {
+                        show_message("uploaded files");
+                    }
+                    else {
+                        show_message(`upload_files failed (status code ${response.status}, "${response.statusText}")`);
+                    }
+                }
+                catch (error) {
+                    show_message(`upload files failed with error "${error}"`);
                 }
             }
 

@@ -21,8 +21,13 @@ class SourceData(pydantic.BaseModel):
     data : str
 
 
+# todo: use global pathlib objects
 SOURCES_DIR = "./sources"
 PAGES_DIR = "./static"
+FILES_SUBDIR = "files"
+SOURCE_PATH = pathlib.Path(SOURCES_DIR)
+WWW_PATH = pathlib.Path(PAGES_DIR)
+WWW_FILES_PATH = WWW_PATH / "files"
 
 
 app = fastapi.FastAPI()
@@ -104,6 +109,19 @@ async def put_source(name: str, source: SourceData) -> None:
         raise fastapi.HTTPException(status_code=400, detail="error in source")
 
 
+@app.put("/api/files")
+async def upload_files(files: list[fastapi.UploadFile]):
+    for remote_file in files:
+        path = pathlib.Path(PAGES_DIR) / FILES_SUBDIR / remote_file.filename
+
+        # todo: handle already existing files
+
+        with open(path, "wb") as local_file:
+            print(f"writing {remote_file.filename}")
+            remote_content = await remote_file.read()
+            local_file.write(remote_content)
+
+
 def _create_html_page(name: str, path: pathlib.Path) -> bool:
     result = subprocess.run(["pandoc", "--standalone", "--to", "html5", path], capture_output=True, check=True, shell=False)
 
@@ -126,8 +144,9 @@ app.mount("/", fastapi.staticfiles.StaticFiles(directory=PAGES_DIR, html=True), 
 
 if __name__ == "__main__":
     # create directories if not present
-    pathlib.Path(SOURCES_DIR).mkdir(exist_ok=True)
-    pathlib.Path(PAGES_DIR).mkdir(exist_ok=True)
+    SOURCE_PATH.mkdir(exist_ok=True)
+    WWW_PATH.mkdir(exist_ok=True)
+    WWW_FILES_PATH.mkdir(exist_ok=True)
 
     # parse command line arguments
     parser = argparse.ArgumentParser(description="pandoc based wiki")

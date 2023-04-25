@@ -18,7 +18,7 @@
             <button id="open_html_button">open</button>
 	    </span><br>
 
-        <small><span id="message"></span></small><br>
+        <small><span id="markup_message"></span></small><br>
 
 	<textarea id="edit_field" rows="20" style="width:99%"></textarea><br>
 
@@ -36,7 +36,9 @@
         <span>
             <select id="media_select"></select> 
             <button id="delete_media_button">delete</button>
-	    </span><br>
+        </span><br>
+
+        <small><span id="media_message"></span></small>
 
 
         <script>
@@ -69,7 +71,7 @@
                     const response = await fetch("/api/markup");
 
                     if (response.status != 200) {
-                        show_message(`load markup files failed (status code ${response.status}, "${response.statusText}")`);
+                        show_markup_message(`load markup files failed (status code ${response.status}, "${response.statusText}")`);
                     }
 
                     const json_response = await response.json(); // should return a json array
@@ -95,7 +97,7 @@
                         }
                     }
                 } catch (error) {
-                    show_message(`load markup files failed with error "${error}"`);
+                    show_markup_message(`load markup files failed with error "${error}"`);
                 }
             }
 
@@ -112,15 +114,15 @@
                         response = await fetch(`/api/markup/${source}`, {method: "PUT", headers: {"content-type": "application/json"}, body: json_source_data})
 
                         if (response.status == 200) {
-                            show_message(`created new markup file "${source}"`);
+                            show_markup_message(`created new markup file "${source}"`);
                             load_markup(document.getElementById("buffer_content").innerHTML);
                         }
                         else {
-                            show_message(`create markup file failed (status code ${response.status}, "${response.statusText}")`);
+                            show_markup_message(`create markup file failed (status code ${response.status}, "${response.statusText}")`);
                         }
                     }
                     catch (error) {
-                        show_message(`create markup file failed with error "${error}"`);
+                        show_markup_message(`create markup file failed with error "${error}"`);
                     }
                 }
             }
@@ -136,10 +138,10 @@
                     const response = await fetch(`/api/markup/${source}`);
 
                     if (response.status == 200) {
-                        show_message(`editing markup file "${source}"`);
+                        show_markup_message(`editing markup file "${source}"`);
                     }
                     else {
-                        show_message(`edit markup file failed (status code ${response.status}, "${response.statusText}")`);
+                        show_markup_message(`edit markup file failed (status code ${response.status}, "${response.statusText}")`);
                     }
 
                     const json_response = await response.json(); // should return a string
@@ -148,7 +150,7 @@
                     document.getElementById("buffer_content").innerHTML = source;
                 }
                 catch (error) {
-                    show_message(`edit markup file failed with error "${error}"`);
+                    show_markup_message(`edit markup file failed with error "${error}"`);
                 }
             }
 
@@ -163,16 +165,16 @@
                     response = await fetch(`/api/markup/${source}`, {method: "DELETE"});
 
                     if (response.status == 200) {
-                        show_message(`deleted markup file "${source}"`);
+                        show_markup_message(`deleted markup file "${source}"`);
                     }
                     else {
-                        show_message(`delete markup file failed (status code ${response.status}, "${response.statusText}")`);
+                        show_markup_message(`delete markup file failed (status code ${response.status}, "${response.statusText}")`);
                     }
 
                     load_markup(document.getElementById("buffer_content").innerHTML);
                 }
                 catch (error) {
-                    show_message(`delete markup file failed with error "${error}"`);
+                    show_markup_message(`delete markup file failed with error "${error}"`);
                 }
             }
 
@@ -189,14 +191,14 @@
                     const response = await fetch(`/api/markup/${source}`, {method: "PUT", headers: {"content-type": "application/json"}, body: json_source_data});
 
                     if (response.status == 200) {
-                        show_message(`saved markup file as "${source}"`);
+                        show_markup_message(`saved markup file as "${source}"`);
                     }
                     else {
-                        show_message(`save markup file failed (status code ${response.status}, "${response.statusText}")`);
+                        show_markup_message(`save markup file failed (status code ${response.status}, "${response.statusText}")`);
                     }
                 }
                 catch (error) {
-                    show_message(`save markup file failed with error "${error}"`);
+                    show_markup_message(`save markup file failed with error "${error}"`);
                 }
             }
 
@@ -220,7 +222,7 @@
                     const response = await fetch("/api/media");
 
                     if (response.status != 200) {
-                        show_message(`load media files failed (status code ${response.status}, "${response.statusText}")`);
+                        show_media_message(`load media files failed (status code ${response.status}, "${response.statusText}")`);
                     }
 
                     const json_response = await response.json(); // should return a json array
@@ -235,7 +237,7 @@
 
                     document.getElementById("media_select").innerHTML = options;
                 } catch (error) {
-                    show_message(`load media files failed with error "${error}"`);
+                    show_media_message(`load media files failed with error "${error}"`);
                 }
             }
 
@@ -257,15 +259,15 @@
                     const response = await fetch("/api/media", {method: "PUT", body: files_data});
 
                     if (response.status == 200) {
-                        show_message(message_string);
+                        show_media_message(message_string);
                         load_media();
                     }
                     else {
-                        show_message(`upload media files failed (status code ${response.status}, "${response.statusText}")`);
+                        show_media_message(`upload media files failed (status code ${response.status}, "${response.statusText}")`);
                     }
                 }
                 catch (error) {
-                    show_message(`upload media files failed with error "${error}"`);
+                    show_media_message(`upload media files failed with error "${error}"`);
                 }
             }
 
@@ -280,23 +282,29 @@
                     response = await fetch(`/api/media/${source}`, {method: "DELETE"});
 
                     if (response.status == 200) {
-                        show_message(`deleted media file "${source}"`);
+                        show_media_message(`deleted media file "${source}"`);
                     }
                     else {
-                        show_message(`delete media file failed (status code ${response.status}, "${response.statusText}")`);
+                        show_media_message(`delete media file failed (status code ${response.status}, "${response.statusText}")`);
                     }
 
                     load_media();
                 }
                 catch (error) {
-                    show_message(`delete media file failed with error "${error}"`);
+                    show_media_message(`delete media file failed with error "${error}"`);
                 }
             }
 
-            // helper function to show info message
-            function show_message(message) {
-                document.getElementById("message").innerHTML = message;
-                //setTimeout(() => {document.getElementById("message").innerHTML = "-"}, 4000);
+            // helper function to show markup info message
+            function show_markup_message(message) {
+                document.getElementById("markup_message").innerHTML = message;
+                //setTimeout(() => {document.getElementById("markup_message").innerHTML = "-"}, 4000);
+            }
+
+            // helper function to show media info message
+            function show_media_message(message) {
+                document.getElementById("media_message").innerHTML = message;
+                //setTimeout(() => {document.getElementById("media_message").innerHTML = "-"}, 4000);
             }
         </script>
     </body>

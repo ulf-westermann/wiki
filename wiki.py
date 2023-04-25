@@ -22,46 +22,46 @@ class SourceData(pydantic.BaseModel):
 
 
 # todo: use global pathlib objects
-SOURCES_DIR = "./sources"
-PAGES_DIR = "./static"
-FILES_SUBDIR = "files"
+#SOURCES_DIR = "./sources"
+#WWW_DIR = "./static"
+#FILES_SUBDIR = "files"
 
-SOURCE_PATH = pathlib.Path(SOURCES_DIR)
-WWW_PATH = pathlib.Path(PAGES_DIR)
-WWW_FILES_PATH = WWW_PATH / "files"
+MARKUP_PATH = pathlib.Path("./sources")
+WWW_PATH = pathlib.Path("./static")
+WWW_MEDIA_PATH = WWW_PATH / "files"
 
 
 app = fastapi.FastAPI()
 
 
-@app.get("/api/sources")
-async def get_sources():
-    """get list of source page names"""
+@app.get("/api/markup")
+async def get_markup_files():
+    """get list of markup file names"""
     sources = []
 
-    sources.extend(SOURCE_PATH.glob("*.md"))
-    sources.extend(SOURCE_PATH.glob("*.rst"))
-    sources.extend(SOURCE_PATH.glob("*.txt"))
-    sources.extend(SOURCE_PATH.glob("*.html"))
+    sources.extend(MARKUP_PATH.glob("*.md"))
+    sources.extend(MARKUP_PATH.glob("*.rst"))
+    sources.extend(MARKUP_PATH.glob("*.txt"))
+    sources.extend(MARKUP_PATH.glob("*.html"))
 
     return [source.name for source in sources]
 
 
-@app.get("/api/sources/{name}")
-async def get_source(name: str):
-    """get source for a html page"""
-    source_file_path = SOURCE_PATH / name
+@app.get("/api/markup/{name}")
+async def get_markup(name: str):
+    """get markup source for a html page"""
+    markup_file_path = MARKUP_PATH / name
 
-    if not source_file_path.is_relative_to(SOURCE_PATH):
+    if not markup_file_path.is_relative_to(MARKUP_PATH):
         raise fastapi.HTTPException(status_code=403, detail="not allowed")
 
-    with open(source_file_path, "r", encoding="utf-8") as file:
+    with open(markup_file_path, "r", encoding="utf-8") as file:
         return file.read()
 
 
-@app.delete("/api/sources/{name}")
-async def delete_source(name: str):
-    """delete source and html page"""
+@app.delete("/api/markup/{name}")
+async def delete_markup_file(name: str):
+    """delete markup file and corresponding html page"""
     # check if html file is valid
     html_file_path = WWW_PATH.joinpath(name).with_suffix(".html")
 
@@ -71,64 +71,91 @@ async def delete_source(name: str):
     if html_file_path.name == "manage.html": # manage.html is special page
         raise fastapi.HTTPException(status_code=403, detail="not allowed")
 
-    # check if source file is valid
-    source_file_path = SOURCE_PATH.joinpath(name)
+    # check if markup file is valid
+    markup_file_path = MARKUP_PATH.joinpath(name)
 
-    if not source_file_path.is_relative_to(SOURCE_PATH):
+    if not markup_file_path.is_relative_to(MARKUP_PATH):
         raise fastapi.HTTPException(status_code=403, detail="not allowed")
 
-    # delete files
+    # delet files
     html_file_path.unlink(missing_ok=True)
-    source_file_path.unlink()
+    markup_file_path.unlink()
 
 
-#@app.put("/api/sources/{name}", response_class=fastapi.responses.HTMLResponse)
-@app.put("/api/sources/{name}")
-async def put_source(name: str, source: SourceData) -> None:
-    """put source for a html page"""
-    # check if source file is valid
-    source_file_path = SOURCE_PATH / name
+#@app.put("/api/markup/{name}", response_class=fastapi.responses.HTMLResponse)
+@app.put("/api/markup/{name}")
+async def put_markup_file(name: str, source: SourceData) -> None:
+    """put markup file and create corresponding html page"""
+    # check if markup file path is valid
+    markup_file_path = MARKUP_PATH / name
 
-    if not source_file_path.is_relative_to(SOURCE_PATH):
+    if not markup_file_path.is_relative_to(MARKUP_PATH):
         raise fastapi.HTTPException(status_code=403, detail="not allowed")
 
-    if source_file_path.name == "manage.md": # manage.html is a special page
+    if markup_file_path.name == "manage.md": # manage.html is a special page
         raise fastapi.HTTPException(status_code=403, detail="not allowed")
 
-    if source_file_path.suffix not in (".md", ".rst", ".txt", ".html"):
+    if markup_file_path.suffix not in (".md", ".rst", ".txt", ".html"):
         raise fastapi.HTTPException(status_code=400, detail="file type not supported")
 
-    # backup old source files with same name, if present
+    # backup old markup file with same name, if present
     try:
-        source_file_path.rename(source_file_path.parent / pathlib.Path(source_file_path.name + "_" + datetime.datetime.utcnow().isoformat() + ".backup"))
+        markup_file_path.rename(markup_file_path.parent / pathlib.Path(markup_file_path.name + "_" + datetime.datetime.utcnow().isoformat() + ".backup"))
     except FileNotFoundError:
         pass
 
-    # sanitize input and write source file
-    with open(source_file_path, "w", encoding="utf-8") as file:
+    # sanitize input and write markup file
+    with open(markup_file_path, "w", encoding="utf-8") as file:
         # todo: sanitizer removes whitespaces
         #sanitized_html = html_sanitizer.Sanitizer({"keep_typographic_whitespace": True}).sanitize(source.data)
         sanitized_html = source.data
         file.write(sanitized_html)
 
     # create html file
-    if not _create_html_page(name, source_file_path):
+    if not _create_html_page(name, markup_file_path):
         raise fastapi.HTTPException(status_code=400, detail="error in source")
 
 
-@app.put("/api/files")
-async def upload_files(files: list[fastapi.UploadFile]):
-    """upload multiple files to special folder that is served by www server"""
+@app.get("/api/media")
+async def get_media_files():
+    """get list of media files"""
+    files = WWW_MEDIA_PATH.glob("*")
+
+    return [file.name for file in files]
+
+
+@app.put("/api/media")
+async def upload_media_files(files: list[fastapi.UploadFile]):
+    """upload multiple media files"""
     for remote_file in files:
-        local_file_path = WWW_FILES_PATH / remote_file.filename
+        local_file_path = WWW_MEDIA_PATH / remote_file.filename
 
-        # todo: check local file path  
+        # check if media file path is valid
+        if not local_file_path.is_relative_to(WWW_MEDIA_PATH):
+            raise fastapi.HTTPException(status_code=403, detail="not allowed")
 
-        # todo: handle already existing files
+        # backup old media file with same name, if present
+        try:
+            local_file_path.rename(local_file_path.parent / pathlib.Path(local_file_path.name + "_" + datetime.datetime.utcnow().isoformat() + ".backup"))
+        except FileNotFoundError:
+            pass
 
         with open(local_file_path, "wb") as local_file:
             remote_content = await remote_file.read()
             local_file.write(remote_content)
+
+
+@app.delete("/api/media/{name}")
+async def delete_media_file(name: str):
+    """delete media file"""
+    # check if media file is valid
+    file_path = WWW_MEDIA_PATH.joinpath(name)
+
+    if not file_path.is_relative_to(WWW_MEDIA_PATH):
+        raise fastapi.HTTPException(status_code=403, detail="not allowed")
+
+    # delete media file
+    file_path.unlink()
 
 
 def _create_html_page(name: str, path: pathlib.Path) -> bool:
@@ -148,14 +175,14 @@ def _create_html_page(name: str, path: pathlib.Path) -> bool:
 
 
 # make fastapi serve static (html) files
-app.mount("/", fastapi.staticfiles.StaticFiles(directory=PAGES_DIR, html=True), name="static")
+app.mount("/", fastapi.staticfiles.StaticFiles(directory=WWW_PATH, html=True), name="static")
 
 
 if __name__ == "__main__":
     # create directories if not present
-    SOURCE_PATH.mkdir(exist_ok=True)
+    MARKUP_PATH.mkdir(exist_ok=True)
     WWW_PATH.mkdir(exist_ok=True)
-    WWW_FILES_PATH.mkdir(exist_ok=True)
+    WWW_MEDIA_PATH.mkdir(exist_ok=True)
 
     # parse command line arguments
     parser = argparse.ArgumentParser(description="pandoc based wiki")

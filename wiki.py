@@ -25,6 +25,7 @@ class SourceData(pydantic.BaseModel):
 SOURCES_DIR = "./sources"
 PAGES_DIR = "./static"
 FILES_SUBDIR = "files"
+
 SOURCE_PATH = pathlib.Path(SOURCES_DIR)
 WWW_PATH = pathlib.Path(PAGES_DIR)
 WWW_FILES_PATH = WWW_PATH / "files"
@@ -36,13 +37,12 @@ app = fastapi.FastAPI()
 @app.get("/api/sources")
 async def get_sources():
     """get list of source page names"""
-    source_path = pathlib.Path(SOURCES_DIR)
-
     sources = []
-    sources.extend(source_path.glob("*.md"))
-    sources.extend(source_path.glob("*.rst"))
-    sources.extend(source_path.glob("*.txt"))
-    sources.extend(source_path.glob("*.html"))
+
+    sources.extend(SOURCE_PATH.glob("*.md"))
+    sources.extend(SOURCE_PATH.glob("*.rst"))
+    sources.extend(SOURCE_PATH.glob("*.txt"))
+    sources.extend(SOURCE_PATH.glob("*.html"))
 
     return [source.name for source in sources]
 
@@ -50,74 +50,83 @@ async def get_sources():
 @app.get("/api/sources/{name}")
 async def get_source(name: str):
     """get source for a html page"""
-    source_path = pathlib.Path(SOURCES_DIR) / name
+    source_file_path = SOURCE_PATH / name
 
-    if not source_path.is_relative_to(pathlib.Path(SOURCES_DIR)):
+    if not source_file_path.is_relative_to(SOURCE_PATH):
         raise fastapi.HTTPException(status_code=403, detail="not allowed")
 
-    with open(source_path, "r", encoding="utf-8") as file:
+    with open(source_file_path, "r", encoding="utf-8") as file:
         return file.read()
 
 
 @app.delete("/api/sources/{name}")
 async def delete_source(name: str):
     """delete source and html page"""
-    html_path = pathlib.Path(PAGES_DIR).joinpath(name).with_suffix(".html")
+    # check if html file is valid
+    html_file_path = WWW_PATH.joinpath(name).with_suffix(".html")
 
-    if not html_path.is_relative_to(pathlib.Path(PAGES_DIR)):
+    if not html_file_path.is_relative_to(WWW_PATH):
         raise fastapi.HTTPException(status_code=403, detail="not allowed")
 
-    if html_path.name == "manage.html": # manage.html is special page
+    if html_file_path.name == "manage.html": # manage.html is special page
         raise fastapi.HTTPException(status_code=403, detail="not allowed")
 
-    source_path = pathlib.Path(SOURCES_DIR).joinpath(name)
+    # check if source file is valid
+    source_file_path = SOURCE_PATH.joinpath(name)
 
-    if not source_path.is_relative_to(pathlib.Path(SOURCES_DIR)):
+    if not source_file_path.is_relative_to(SOURCE_PATH):
         raise fastapi.HTTPException(status_code=403, detail="not allowed")
 
-    html_path.unlink(missing_ok=True)
-    source_path.unlink()
+    # delete files
+    html_file_path.unlink(missing_ok=True)
+    source_file_path.unlink()
 
 
 #@app.put("/api/sources/{name}", response_class=fastapi.responses.HTMLResponse)
 @app.put("/api/sources/{name}")
 async def put_source(name: str, source: SourceData) -> None:
     """put source for a html page"""
-    source_path = pathlib.Path(SOURCES_DIR) / name
+    # check if source file is valid
+    source_file_path = SOURCE_PATH / name
 
-    if not source_path.is_relative_to(pathlib.Path(SOURCES_DIR)):
+    if not source_file_path.is_relative_to(SOURCE_PATH):
         raise fastapi.HTTPException(status_code=403, detail="not allowed")
 
-    if source_path.name == "manage.md": # manage.html is a special page
+    if source_file_path.name == "manage.md": # manage.html is a special page
         raise fastapi.HTTPException(status_code=403, detail="not allowed")
 
-    if source_path.suffix not in (".md", ".rst", ".txt", ".html"):
+    if source_file_path.suffix not in (".md", ".rst", ".txt", ".html"):
         raise fastapi.HTTPException(status_code=400, detail="file type not supported")
 
+    # backup old source files with same name, if present
     try:
-        source_path.rename(source_path.parent / pathlib.Path(source_path.name + "_" + datetime.datetime.utcnow().isoformat() + ".backup"))
+        source_file_path.rename(source_file_path.parent / pathlib.Path(source_file_path.name + "_" + datetime.datetime.utcnow().isoformat() + ".backup"))
     except FileNotFoundError:
         pass
 
-    with open(source_path, "w", encoding="utf-8") as file:
-        #sanitized_html = html_sanitizer.Sanitizer({"keep_typographic_whitespace": True}).sanitize(source.data)
+    # sanitize input and write source file
+    with open(source_file_path, "w", encoding="utf-8") as file:
         # todo: sanitizer removes whitespaces
+        #sanitized_html = html_sanitizer.Sanitizer({"keep_typographic_whitespace": True}).sanitize(source.data)
         sanitized_html = source.data
         file.write(sanitized_html)
 
-    if not _create_html_page(name, source_path):
+    # create html file
+    if not _create_html_page(name, source_file_path):
         raise fastapi.HTTPException(status_code=400, detail="error in source")
 
 
 @app.put("/api/files")
 async def upload_files(files: list[fastapi.UploadFile]):
+    """upload multiple files to special folder that is served by www server"""
     for remote_file in files:
-        path = pathlib.Path(PAGES_DIR) / FILES_SUBDIR / remote_file.filename
+        local_file_path = WWW_FILES_PATH / remote_file.filename
+
+        # todo: check local file path  
 
         # todo: handle already existing files
 
-        with open(path, "wb") as local_file:
-            print(f"writing {remote_file.filename}")
+        with open(local_file_path, "wb") as local_file:
             remote_content = await remote_file.read()
             local_file.write(remote_content)
 
@@ -128,12 +137,12 @@ def _create_html_page(name: str, path: pathlib.Path) -> bool:
     if result.returncode != 0:
         return False
 
-    html_data = result.stdout.decode("utf-8")
+    html_file_path = result.stdout.decode("utf-8")
 
-    html_path = pathlib.Path(PAGES_DIR).joinpath(name).with_suffix(".html")
+    html_path = WWW_PATH.joinpath(name).with_suffix(".html")
 
     with open(html_path, "w", encoding="utf-8") as file:
-        file.write(html_data)
+        file.write(html_file_path)
 
     return True
 

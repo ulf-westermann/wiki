@@ -37,6 +37,7 @@
         <p>
             <select id="media_select"></select> 
             <button id="delete_media_button">delete</button>
+            <button id="open_media_button">open</button>
         </p>
 
         <p><small><span id="media_message"></span></small></p>
@@ -49,6 +50,7 @@
             document.getElementById("open_html_button").addEventListener("click", open_html);
             document.getElementById("upload_media_button").addEventListener("click", upload_media);
             document.getElementById("delete_media_button").addEventListener("click", delete_media);
+            document.getElementById("open_media_button").addEventListener("click", open_media);
 
             window.onload = initialize();
 
@@ -308,6 +310,16 @@
                 catch (error) {
                     show_media_message(`delete media file failed with error "${error}"`);
                 }
+            }
+
+            // open media corresponding to currently active media file in select box
+            function open_media() {
+                console.log("open_media() called...");
+
+                const select = document.getElementById("media_select");
+                const media = select.options[select.selectedIndex].text;
+
+                window.open(`/media/${media}`)
             }
 
             // helper function to show markup info message

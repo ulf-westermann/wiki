@@ -5,9 +5,6 @@ import datetime
 import pathlib
 import subprocess
 
-# todo: add put/delete of files into ./static/files directory, so that they can be referenced
-# in html pages (e.g. css, images)
-
 
 import fastapi
 import fastapi.responses
@@ -21,14 +18,10 @@ class SourceData(pydantic.BaseModel):
     data : str
 
 
-# todo: use global pathlib objects
-#SOURCES_DIR = "./sources"
-#WWW_DIR = "./static"
-#FILES_SUBDIR = "files"
 
-MARKUP_PATH = pathlib.Path("./sources")
-WWW_PATH = pathlib.Path("./static")
-WWW_MEDIA_PATH = WWW_PATH / "files"
+MARKUP_PATH = pathlib.Path("./markup")
+WWW_PATH = pathlib.Path("./www")
+WWW_MEDIA_PATH = WWW_PATH / "media"
 
 
 app = fastapi.FastAPI()
@@ -95,7 +88,7 @@ async def put_markup_file(name: str, source: SourceData) -> None:
     if markup_file_path.name == "manage.md": # manage.html is a special page
         raise fastapi.HTTPException(status_code=403, detail="not allowed")
 
-    if markup_file_path.suffix not in (".md", ".rst", ".txt", ".html"):
+    if markup_file_path.suffix not in (".md", ".rst", ".txt", ".html", ".css"):
         raise fastapi.HTTPException(status_code=400, detail="file type not supported")
 
     # backup old markup file with same name, if present
@@ -108,12 +101,15 @@ async def put_markup_file(name: str, source: SourceData) -> None:
     with open(markup_file_path, "w", encoding="utf-8") as file:
         # todo: sanitizer removes whitespaces
         #sanitized_html = html_sanitizer.Sanitizer({"keep_typographic_whitespace": True}).sanitize(source.data)
-        sanitized_html = source.data
-        file.write(sanitized_html)
+        #sanitized_html = source.data
+        file.write(source.data)
 
     # create html file
-    if not _create_html_page(name, markup_file_path):
-        raise fastapi.HTTPException(status_code=400, detail="error in source")
+    if markup_file_path.suffix != ".css":
+        css_files = [css_file.name for css_file in MARKUP_PATH.glob("*.css")]
+
+        if not _create_html_page(name, markup_file_path, css_files):
+            raise fastapi.HTTPException(status_code=400, detail="error in source")
 
 
 @app.get("/api/media")
@@ -158,8 +154,15 @@ async def delete_media_file(name: str):
     file_path.unlink()
 
 
-def _create_html_page(name: str, path: pathlib.Path) -> bool:
-    result = subprocess.run(["pandoc", "--standalone", "--to", "html5", path], capture_output=True, check=True, shell=False)
+def _create_html_page(name: str, path: pathlib.Path, css_files: list) -> bool:
+    run_params = ["pandoc", "--standalone", "--to", "html5"]
+
+    for css_file in css_files:
+        run_params.extend(["--css", css_file])
+
+    run_params.append(path)
+
+    result = subprocess.run(run_params, capture_output=True, check=True, shell=False)
 
     if result.returncode != 0:
         return False
@@ -174,16 +177,15 @@ def _create_html_page(name: str, path: pathlib.Path) -> bool:
     return True
 
 
-# make fastapi serve static (html) files
-app.mount("/", fastapi.staticfiles.StaticFiles(directory=WWW_PATH, html=True), name="static")
+# create directories if not present
+MARKUP_PATH.mkdir(exist_ok=True)
+WWW_PATH.mkdir(exist_ok=True)
+WWW_MEDIA_PATH.mkdir(exist_ok=True)
 
+# make fastapi serve static (html) files
+app.mount("/", fastapi.staticfiles.StaticFiles(directory=WWW_PATH, html=True), name="www")
 
 if __name__ == "__main__":
-    # create directories if not present
-    MARKUP_PATH.mkdir(exist_ok=True)
-    WWW_PATH.mkdir(exist_ok=True)
-    WWW_MEDIA_PATH.mkdir(exist_ok=True)
-
     # parse command line arguments
     parser = argparse.ArgumentParser(description="pandoc based wiki")
     parser.add_argument("-i", "--ip", type=str, default="127.0.0.1", help="listening address")

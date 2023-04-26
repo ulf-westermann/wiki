@@ -7,39 +7,38 @@
         <title>manage wiki</title>
     </head>
     <body>
-        <strong>manage markup files</strong><br>
+        <p><strong>manage markup files</strong></p>
 
-        <span>
+        <p>
             <button id="new_markup_button">new</button> |
             <select id="markup_select"></select> 
             <button id="edit_markup_button">edit</button>
             <button id="delete_markup_button">delete</button>
             <button id="save_markup_button">save</button>
             <button id="open_html_button">open</button>
-	    </span><br>
+            <small><span id="markup_message"></span></small>
+	    </p>
 
-        <small><span id="markup_message"></span></small><br>
-
-	<textarea id="edit_field" rows="20" style="width:99%"></textarea><br>
-
-        <small>buffer loaded from: <span id="buffer_content"></span></small>
+        <p>
+            <textarea id="edit_field" rows="20" style="width:99%"></textarea><br>
+            <small>buffer loaded from: <span id="buffer_content"></span></small>
+        </p>
 
         <hr />
 
-        <strong>manage media files</strong><br>
+        <p><strong>manage media files</strong></p>
             
-        <span>
+        <p>
             <input id="media_input" type="file" multiple />
             <button id="upload_media_button">upload</button>
-        </span><br>
+        </p>
 
-        <span>
+        <p>
             <select id="media_select"></select> 
             <button id="delete_media_button">delete</button>
-        </span><br>
+        </p>
 
-        <small><span id="media_message"></span></small>
-
+        <p><small><span id="media_message"></span></small></p>
 
         <script>
             document.getElementById("new_markup_button").addEventListener("click", new_markup);

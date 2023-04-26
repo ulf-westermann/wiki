@@ -292,7 +292,7 @@
                 const source = select.options[select.selectedIndex].text;
 
                 try {
-                    show_media_message(`deleting media file "${source}"`);
+                    show_media_message(`deleting media file "${source}"...`);
 
                     response = await fetch(`/api/media/${source}`, {method: "DELETE"});
 

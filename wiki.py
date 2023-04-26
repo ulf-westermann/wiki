@@ -36,6 +36,7 @@ async def get_markup_files():
     sources.extend(MARKUP_PATH.glob("*.rst"))
     sources.extend(MARKUP_PATH.glob("*.txt"))
     sources.extend(MARKUP_PATH.glob("*.html"))
+    sources.extend(MARKUP_PATH.glob("*.css"))
 
     return [source.name for source in sources]
 

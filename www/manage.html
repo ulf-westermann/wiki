@@ -7,18 +7,18 @@
         <title>manage wiki</title>
     </head>
     <body>
-        <p><strong>manage markup/css files</strong></p>
+        <p><strong>manage source files</strong></p>
 
         <p>
-            <button id="new_markup_button">new</button> |
-            <select id="markup_select"></select> 
-            <button id="edit_markup_button">edit</button>
-            <button id="delete_markup_button">delete</button>
-            <button id="save_markup_button">save</button>
+            <button id="new_source_button">new</button> |
+            <select id="source_select"></select> 
+            <button id="edit_source_button">edit</button>
+            <button id="delete_source_button">delete</button>
+            <button id="save_source_button">save</button>
             <button id="open_html_button">open</button>
 	    </p>
 
-        <p><small><span id="markup_message">&nbsp</span></small></p>
+        <p><small><span id="source_message">&nbsp</span></small></p>
 
         <p>
             <textarea id="edit_field" rows="20" style="width:99%"></textarea><br>
@@ -40,10 +40,10 @@
         <p><small><span id="media_message"></span></small></p>
 
         <script>
-            document.getElementById("new_markup_button").addEventListener("click", new_markup);
-            document.getElementById("edit_markup_button").addEventListener("click", edit_markup);
-            document.getElementById("delete_markup_button").addEventListener("click", delete_markup);
-            document.getElementById("save_markup_button").addEventListener("click", save_markup);
+            document.getElementById("new_source_button").addEventListener("click", new_source);
+            document.getElementById("edit_source_button").addEventListener("click", edit_source);
+            document.getElementById("delete_source_button").addEventListener("click", delete_source);
+            document.getElementById("save_source_button").addEventListener("click", save_source);
             document.getElementById("open_html_button").addEventListener("click", open_html);
             document.getElementById("upload_media_button").addEventListener("click", upload_media);
             document.getElementById("delete_media_button").addEventListener("click", delete_media);
@@ -55,22 +55,22 @@
             function initialize() {
                 console.log("initialize() called...");
 
-                load_markup();
+                load_source();
                 load_media();
 
                 document.getElementById("edit_field").value = "";
                 document.getElementById("buffer_content").innerHTML = ""
             }
 
-            // load list of markup files and populate select box
-            async function load_markup(select_option) {
-                console.log("load_markup() called...");
+            // load list of source files and populate select box
+            async function load_source(select_option) {
+                console.log("load_source() called...");
 
                 try {
-                    const response = await fetch("/api/markup");
+                    const response = await fetch("/api/source");
 
                     if (response.status != 200) {
-                        show_markup_message(`load markup files failed (status code ${response.status}, "${response.statusText}")`);
+                        show_source_message(`load source files failed (status code ${response.status}, "${response.statusText}")`);
                     }
 
                     const json_response = await response.json(); // should return a json array
@@ -83,68 +83,68 @@
                         options += `<option>${json_response[i]}</option>`;
                     }
 
-                    document.getElementById("markup_select").innerHTML = options;
+                    document.getElementById("source_select").innerHTML = options;
 
                     if (select_option != undefined) {
-                        options = document.getElementById("markup_select").options;
+                        options = document.getElementById("source_select").options;
                     
                         for (let i = 0; i < options.length; i += 1) {
                             if (select_option == options[i].value) {
-                                document.getElementById("markup_select").selectedIndex = i;
+                                document.getElementById("source_select").selectedIndex = i;
                                 break;
                             }
                         }
                     }
                 } catch (error) {
-                    show_markup_message(`load markup files failed with error "${error}"`);
+                    show_source_message(`load source files failed with error "${error}"`);
                 }
             }
 
-            // create new markup page
-            async function new_markup() {
-                console.log("new_markup() called...");
+            // create new source page
+            async function new_source() {
+                console.log("new_source() called...");
 
-                const source = prompt("markup file name", "*.md")
+                const source = prompt("source file name", "*.md")
 
                 if (source != null) {
                     const json_source_data = JSON.stringify({"data": ""});
 
                     try {
-                        show_markup_message(`creating new markup file "${source}"`);
+                        show_source_message(`creating new source file "${source}"`);
 
-                        response = await fetch(`/api/markup/${source}`, {method: "PUT", headers: {"content-type": "application/json"}, body: json_source_data})
+                        response = await fetch(`/api/source/${source}`, {method: "PUT", headers: {"content-type": "application/json"}, body: json_source_data})
 
                         if (response.status == 200) {
-                            show_markup_message(`created new markup file "${source}"`);
-                            load_markup(document.getElementById("buffer_content").innerHTML);
+                            show_source_message(`created new source file "${source}"`);
+                            load_source(document.getElementById("buffer_content").innerHTML);
                         }
                         else {
-                            show_markup_message(`create new markup file failed (status code ${response.status}, "${response.statusText}")`);
+                            show_source_message(`create new source file failed (status code ${response.status}, "${response.statusText}")`);
                         }
                     }
                     catch (error) {
-                        show_markup_message(`create new markup file failed with error "${error}"`);
+                        show_source_message(`create new source file failed with error "${error}"`);
                     }
                 }
             }
 
-            // edit markup file currently active in select box
-            async function edit_markup() {
-                console.log("edit_markup() called...");
+            // edit source file currently active in select box
+            async function edit_source() {
+                console.log("edit_source() called...");
 
-                const select = document.getElementById("markup_select");
+                const select = document.getElementById("source_select");
                 const source = select.options[select.selectedIndex].text;
 
                 try {
-                    show_markup_message(`loading markup file "${source}" for editing...`);
+                    show_source_message(`loading source file "${source}" for editing...`);
 
-                    const response = await fetch(`/api/markup/${source}`);
+                    const response = await fetch(`/api/source/${source}`);
 
                     if (response.status == 200) {
-                        show_markup_message(`editing markup file "${source}"`);
+                        show_source_message(`editing source file "${source}"`);
                     }
                     else {
-                        show_markup_message(`edit markup file failed (status code ${response.status}, "${response.statusText}")`);
+                        show_source_message(`edit source file failed (status code ${response.status}, "${response.statusText}")`);
                     }
 
                     const json_response = await response.json(); // should return a string
@@ -153,67 +153,67 @@
                     document.getElementById("buffer_content").innerHTML = source;
                 }
                 catch (error) {
-                    show_markup_message(`edit markup file failed with error "${error}"`);
+                    show_source_message(`edit source file failed with error "${error}"`);
                 }
             }
 
-            // delete markup (and html) file currently active in select box
-            async function delete_markup() {
-                console.log("delete_markup() called...");
+            // delete source (and html) file currently active in select box
+            async function delete_source() {
+                console.log("delete_source() called...");
 
-                const select = document.getElementById("markup_select");
+                const select = document.getElementById("source_select");
                 const source = select.options[select.selectedIndex].text;
 
                 try {
-                    show_markup_message(`deleting markup file "${source}"...`);
+                    show_source_message(`deleting source file "${source}"...`);
 
-                    response = await fetch(`/api/markup/${source}`, {method: "DELETE"});
+                    response = await fetch(`/api/source/${source}`, {method: "DELETE"});
 
                     if (response.status == 200) {
-                        show_markup_message(`deleted markup file "${source}"`);
+                        show_source_message(`deleted source file "${source}"`);
                     }
                     else {
-                        show_markup_message(`delete markup file failed (status code ${response.status}, "${response.statusText}")`);
+                        show_source_message(`delete source file failed (status code ${response.status}, "${response.statusText}")`);
                     }
 
-                    load_markup(document.getElementById("buffer_content").innerHTML);
+                    load_source(document.getElementById("buffer_content").innerHTML);
                 }
                 catch (error) {
-                    show_markup_message(`delete markup file failed with error "${error}"`);
+                    show_source_message(`delete source file failed with error "${error}"`);
                 }
             }
 
-            // save edited markup file with name currently active in select box
-            async function save_markup() {
-                console.log("save_markup() called...");
+            // save edited source file with name currently active in select box
+            async function save_source() {
+                console.log("save_source() called...");
 
-                const select = document.getElementById("markup_select");
+                const select = document.getElementById("source_select");
                 const source = select.options[select.selectedIndex].text;
 
                 const json_source_data = JSON.stringify({"data": document.getElementById("edit_field").value});
 
                 try {
-                    show_markup_message(`saving markup file as "${source}"...`);
+                    show_source_message(`saving source file as "${source}"...`);
 
-                    const response = await fetch(`/api/markup/${source}`, {method: "PUT", headers: {"content-type": "application/json"}, body: json_source_data});
+                    const response = await fetch(`/api/source/${source}`, {method: "PUT", headers: {"content-type": "application/json"}, body: json_source_data});
 
                     if (response.status == 200) {
-                        show_markup_message(`saved markup file as "${source}"`);
+                        show_source_message(`saved source file as "${source}"`);
                     }
                     else {
-                        show_markup_message(`save markup file failed (status code ${response.status}, "${response.statusText}")`);
+                        show_source_message(`save source file failed (status code ${response.status}, "${response.statusText}")`);
                     }
                 }
                 catch (error) {
-                    show_markup_message(`save markup file failed with error "${error}"`);
+                    show_source_message(`save source file failed with error "${error}"`);
                 }
             }
 
-            // open html page corresponding to currently active markup file in select box
+            // open html page corresponding to currently active source file in select box
             function open_html() {
                 console.log("open_html() called...");
 
-                const select = document.getElementById("markup_select");
+                const select = document.getElementById("source_select");
                 const source = select.options[select.selectedIndex].text;
 
                 const html_page = source.substr(0, source.lastIndexOf(".")) + ".html";
@@ -319,10 +319,10 @@
                 window.open(`/media/${media}`)
             }
 
-            // helper function to show markup info message
-            function show_markup_message(message) {
-                document.getElementById("markup_message").innerHTML = message;
-                //setTimeout(() => {document.getElementById("markup_message").innerHTML = "-"}, 4000);
+            // helper function to show source info message
+            function show_source_message(message) {
+                document.getElementById("source_message").innerHTML = message;
+                //setTimeout(() => {document.getElementById("source_message").innerHTML = "-"}, 4000);
             }
 
             // helper function to show media info message

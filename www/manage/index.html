@@ -69,31 +69,32 @@
                 try {
                     const response = await fetch("/api/source");
 
-                    if (response.status != 200) {
-                        show_source_message(`load source files failed (status code ${response.status}, "${response.statusText}")`);
-                    }
+                    if (response.status == 200) {
+                        const json_response = await response.json(); // should return a json array
 
-                    const json_response = await response.json(); // should return a json array
+                        json_response.sort();
 
-                    json_response.sort();
+                        let options = "";
 
-                    let options = "";
+                        for (let i = 0; i< json_response.length; i++) {
+                            options += `<option>${json_response[i]}</option>`;
+                        }
 
-                    for (let i = 0; i< json_response.length; i++) {
-                        options += `<option>${json_response[i]}</option>`;
-                    }
+                        document.getElementById("source_select").innerHTML = options;
 
-                    document.getElementById("source_select").innerHTML = options;
-
-                    if (select_option != undefined) {
-                        options = document.getElementById("source_select").options;
-                    
-                        for (let i = 0; i < options.length; i += 1) {
-                            if (select_option == options[i].value) {
-                                document.getElementById("source_select").selectedIndex = i;
-                                break;
+                        if (select_option != undefined) {
+                            options = document.getElementById("source_select").options;
+                        
+                            for (let i = 0; i < options.length; i += 1) {
+                                if (select_option == options[i].value) {
+                                    document.getElementById("source_select").selectedIndex = i;
+                                    break;
+                                }
                             }
                         }
+                    }
+                    else {
+                        show_source_message(`load source files failed (status code ${response.status}, "${response.statusText}")`);
                     }
                 } catch (error) {
                     show_source_message(`load source files failed with error "${error}"`);
@@ -116,6 +117,7 @@
 
                         if (response.status == 200) {
                             show_source_message(`created new source file "${source}"`);
+
                             load_source(document.getElementById("buffer_content").innerHTML);
                         }
                         else {
@@ -142,15 +144,15 @@
 
                     if (response.status == 200) {
                         show_source_message(`editing source file "${source}"`);
+
+                        const json_response = await response.json(); // should return a string
+
+                        document.getElementById("edit_field").value = json_response;
+                        document.getElementById("buffer_content").innerHTML = source;
                     }
                     else {
                         show_source_message(`edit source file failed (status code ${response.status}, "${response.statusText}")`);
                     }
-
-                    const json_response = await response.json(); // should return a string
-
-                    document.getElementById("edit_field").value = json_response;
-                    document.getElementById("buffer_content").innerHTML = source;
                 }
                 catch (error) {
                     show_source_message(`edit source file failed with error "${error}"`);
@@ -171,12 +173,12 @@
 
                     if (response.status == 200) {
                         show_source_message(`deleted source file "${source}"`);
+
+                        load_source(document.getElementById("buffer_content").innerHTML);
                     }
                     else {
                         show_source_message(`delete source file failed (status code ${response.status}, "${response.statusText}")`);
                     }
-
-                    load_source(document.getElementById("buffer_content").innerHTML);
                 }
                 catch (error) {
                     show_source_message(`delete source file failed with error "${error}"`);
@@ -199,6 +201,10 @@
 
                     if (response.status == 200) {
                         show_source_message(`saved source file as "${source}"`);
+
+                        const json_response = await response.json(); // should return a string
+
+                        document.getElementById("edit_field").value = json_response;
                     }
                     else {
                         show_source_message(`save source file failed (status code ${response.status}, "${response.statusText}")`);
@@ -224,8 +230,6 @@
                     file_ext = source.substr(file_ext_index);
                 }
 
-                console.log(file_ext);
-
                 if (file_ext === ".md" || file_ext === ".rst") {
                     window.open(`/${source.substr(0, source.lastIndexOf("."))}.html`)
                 }
@@ -241,21 +245,23 @@
                 try {
                     const response = await fetch("/api/media");
 
-                    if (response.status != 200) {
+                    if (response.status == 200) {
+                        const json_response = await response.json(); // should return a json array
+
+                        json_response.sort();
+
+                        let options = "";
+
+                        for (let i = 0; i< json_response.length; i++) {
+                            options += `<option>${json_response[i]}</option>`;
+                        }
+
+                        document.getElementById("media_select").innerHTML = options;
+                    }
+                    else {
                         show_media_message(`load media files failed (status code ${response.status}, "${response.statusText}")`);
                     }
 
-                    const json_response = await response.json(); // should return a json array
-
-                    json_response.sort();
-
-                    let options = "";
-
-                    for (let i = 0; i< json_response.length; i++) {
-                        options += `<option>${json_response[i]}</option>`;
-                    }
-
-                    document.getElementById("media_select").innerHTML = options;
                 } catch (error) {
                     show_media_message(`load media files failed with error "${error}"`);
                 }
@@ -285,6 +291,7 @@
 
                     if (response.status == 200) {
                         show_media_message("uploaded media file(s):" + message_string);
+
                         load_media();
                     }
                     else {
@@ -310,12 +317,12 @@
 
                     if (response.status == 200) {
                         show_media_message(`deleted media file "${source}"`);
+
+                        load_media();
                     }
                     else {
                         show_media_message(`delete media file failed (status code ${response.status}, "${response.statusText}")`);
                     }
-
-                    load_media();
                 }
                 catch (error) {
                     show_media_message(`delete media file failed with error "${error}"`);

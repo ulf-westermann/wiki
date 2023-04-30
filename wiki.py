@@ -53,9 +53,6 @@ async def delete_source_file(name: str):
     if not html_file_path.is_relative_to(WWW_PATH):
         raise fastapi.HTTPException(status_code=403, detail="not allowed")
 
-    if html_file_path.name == "manage.html": # manage.html is special page
-        raise fastapi.HTTPException(status_code=403, detail="not allowed")
-
     # check if source file is valid
     source_file_path = SOURCE_PATH.joinpath(name)
 

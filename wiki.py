@@ -18,7 +18,6 @@ class SourceData(pydantic.BaseModel):
     data : str
 
 
-
 SOURCE_PATH = pathlib.Path("./source")
 WWW_PATH = pathlib.Path("./www")
 WWW_MEDIA_PATH = WWW_PATH / "media"
@@ -153,13 +152,12 @@ def _process_source_file(source_file_path: pathlib.Path) -> bool:
         # get all currently availabe css files
         css_files = [css_file.name for css_file in SOURCE_PATH.glob("*.css")]
 
-        
         return _create_html_page(source_file_path, css_files)
-    else:
-        # copy other files to www directory
-        www_file_path = WWW_PATH / source_file_path.name
-        www_file_path.write_bytes(source_file_path.read_bytes())
-        return True
+
+    # copy other files to www directory
+    www_file_path = WWW_PATH / source_file_path.name
+    www_file_path.write_bytes(source_file_path.read_bytes())
+    return True
 
 
 def _create_html_page(source_file_path: pathlib.Path, css_files: list[str]) -> bool:
@@ -170,8 +168,6 @@ def _create_html_page(source_file_path: pathlib.Path, css_files: list[str]) -> b
 
     run_params.append(source_file_path)
 
-    print(run_params)
-
     result = subprocess.run(run_params, capture_output=True, check=True, shell=False)
 
     if result.returncode != 0:
@@ -179,11 +175,7 @@ def _create_html_page(source_file_path: pathlib.Path, css_files: list[str]) -> b
 
     html_file_data = result.stdout.decode("utf-8")
 
-    print(html_file_data)
-
     html_path = WWW_PATH.joinpath(source_file_path.stem).with_suffix(".html")
-
-    print(html_path)
 
     with open(html_path, "w", encoding="utf-8") as file:
         file.write(html_file_data)

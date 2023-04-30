@@ -216,9 +216,22 @@
                 const select = document.getElementById("source_select");
                 const source = select.options[select.selectedIndex].text;
 
-                const html_page = source.substr(0, source.lastIndexOf(".")) + ".html";
+                const file_ext_index = source.lastIndexOf(".");
+                
+                let file_ext = ""
 
-                window.open(html_page)
+                if (file_ext_index != -1) {
+                    file_ext = source.substr(file_ext_index);
+                }
+
+                console.log(file_ext);
+
+                if (file_ext === ".md" || file_ext === ".rst") {
+                    window.open(`/${source.substr(0, source.lastIndexOf("."))}.html`)
+                }
+                else {
+                    window.open(`/${source}`)
+                }
             }
 
             // load list of media files and populate select box

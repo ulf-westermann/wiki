@@ -86,7 +86,7 @@ async def put_source_file(name: str, source: SourceData):
 
     # backup old source file with same name, if present
     try:
-        source_file_path.rename(source_file_path.parent / pathlib.Path(source_file_path.name + "_" + datetime.datetime.utcnow().isoformat() + ".backup"))
+        source_file_path.rename(source_file_path.parent / pathlib.Path("~" + source_file_path.name + "_" + datetime.datetime.utcnow().isoformat()))
     except FileNotFoundError:
         pass
 
@@ -119,7 +119,7 @@ async def upload_media_files(files: list[fastapi.UploadFile]):
 
         # backup old media file with same name, if present
         try:
-            local_file_path.rename(local_file_path.parent / pathlib.Path(local_file_path.name + "_" + datetime.datetime.utcnow().isoformat() + ".backup"))
+            local_file_path.rename(local_file_path.parent / pathlib.Path("~" + local_file_path.name + "_" + datetime.datetime.utcnow().isoformat()))
         except FileNotFoundError:
             pass
 

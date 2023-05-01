@@ -86,7 +86,7 @@ async def put_source_file(name: str, source: SourceData):
 
     # backup old source file with same name, if present
     try:
-        source_file_path.rename(source_file_path.parent / pathlib.Path("~" + source_file_path.name + "_" + datetime.datetime.utcnow().isoformat()))
+        source_file_path.rename(source_file_path.parent / pathlib.Path("~" + source_file_path.name + "_" + datetime.datetime.utcnow().isoformat() + ".backup"))
     except FileNotFoundError:
         pass
 
@@ -119,7 +119,7 @@ async def upload_media_files(files: list[fastapi.UploadFile]):
 
         # backup old media file with same name, if present
         try:
-            local_file_path.rename(local_file_path.parent / pathlib.Path("~" + local_file_path.name + "_" + datetime.datetime.utcnow().isoformat()))
+            local_file_path.rename(local_file_path.parent / pathlib.Path("~" + local_file_path.name + "_" + datetime.datetime.utcnow().isoformat() + ".backup"))
         except FileNotFoundError:
             pass
 
@@ -141,6 +141,8 @@ async def delete_media_file(name: str):
 
 def _process_source_file(source_file_path: pathlib.Path) -> pathlib.Path:
     """create html files from markup sources, then copy files to www directory"""
+    www_file_path = pathlib.Path()
+
     # check if we need go generate html by invoking pandoc
     if source_file_path.suffix in _PANDOC_FILE_EXTENSIONS:
         # create html page with currently available css files
@@ -149,7 +151,7 @@ def _process_source_file(source_file_path: pathlib.Path) -> pathlib.Path:
 
         www_file_path = _WWW_PATH.joinpath(source_file_path.stem).with_suffix(".html")
         www_file_path.write_text(html, encoding="utf-8")
-    else:
+    elif source_file_path.suffix != ".backup":
         # other files are copied to www directory
         www_file_path = _WWW_PATH / source_file_path.name
         www_file_path.write_bytes(source_file_path.read_bytes())

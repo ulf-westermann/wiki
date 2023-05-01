@@ -1,5 +1,5 @@
 #!/bin/sh
 
-cd /srv/wiki
+cd /srv/ulf/wiki
 . ./venv/bin/activate
-python -m wiki
+python3.9 -m wiki

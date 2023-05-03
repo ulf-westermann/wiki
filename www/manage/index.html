@@ -202,8 +202,9 @@
                     if (response.status == 200) {
                         show_source_message(`saved source file as "${source}"`);
 
-                        const json_response = await response.json(); // should return a string
+                        load_source(document.getElementById("buffer_content").innerHTML);
 
+                        const json_response = await response.json(); // should return a string
                         document.getElementById("edit_field").value = json_response;
                     }
                     else {

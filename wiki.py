@@ -23,7 +23,9 @@ _WWW_PATH = pathlib.Path("./www")
 _WWW_MEDIA_PATH = _WWW_PATH / "media"
 _PLUGIN_PATH = pathlib.Path("./plugins")
 
-_PANDOC_FILE_EXTENSIONS = (".md", ".rst")
+_PANDOC_FILE_SUFFIXES = (".md", ".rst")
+_BACKUP_FILE_SUFFIX = ".bak"
+
 
 
 app = fastapi.FastAPI()
@@ -58,7 +60,7 @@ async def delete_source_file(name: str):
 
     www_file_path = None
 
-    if source_file_path.suffix in _PANDOC_FILE_EXTENSIONS:
+    if source_file_path.suffix in _PANDOC_FILE_SUFFIXES:
         # check if html file is valid
         www_file_path = _WWW_PATH.joinpath(name).with_suffix(".html")
 
@@ -86,7 +88,7 @@ async def put_source_file(name: str, source: SourceData):
 
     # backup old source file with same name, if present
     try:
-        source_file_path.rename(source_file_path.parent / pathlib.Path("~" + source_file_path.name + "_" + datetime.datetime.utcnow().isoformat() + ".backup"))
+        source_file_path.rename(source_file_path.parent / pathlib.Path("~" + source_file_path.name + "_" + datetime.datetime.utcnow().isoformat() + _BACKUP_FILE_SUFFIX))
     except FileNotFoundError:
         pass
 
@@ -119,7 +121,7 @@ async def upload_media_files(files: list[fastapi.UploadFile]):
 
         # backup old media file with same name, if present
         try:
-            local_file_path.rename(local_file_path.parent / pathlib.Path("~" + local_file_path.name + "_" + datetime.datetime.utcnow().isoformat() + ".backup"))
+            local_file_path.rename(local_file_path.parent / pathlib.Path("~" + local_file_path.name + "_" + datetime.datetime.utcnow().isoformat() + _BACKUP_FILE_SUFFIX))
         except FileNotFoundError:
             pass
 
@@ -144,7 +146,7 @@ def _process_source_file(source_file_path: pathlib.Path) -> pathlib.Path:
     www_file_path = pathlib.Path()
 
     # check if we need go generate html by invoking pandoc
-    if source_file_path.suffix in _PANDOC_FILE_EXTENSIONS:
+    if source_file_path.suffix in _PANDOC_FILE_SUFFIXES:
         # create html page with currently available css files
         css_files = [css_file.name for css_file in _SOURCE_PATH.glob("*.css")]
         html = _create_html(source_file_path, css_files)

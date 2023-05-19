@@ -23,11 +23,13 @@ For people without computer science background, the next section gives an orient
   - Computability, complexity and information theory
   - Programming languages
   - Computer architecture and operating systems
-  - Math
+  - Math [^weitz]
 - Practical skills
   - Usage of operating systems (e.g. shell)
   - Usage of basic software engineering tools (e.g. text editor, compiler, build system, version control)
   - Touch typing (for a high bandwidth interface to the machine)
+  - Self-directed knowledge/skill acquisition
+  - Communication (written/spoken)
 
 
 # A More Philosophical Perspective
@@ -36,20 +38,49 @@ Software engineering, is a socioeconomic endeavor, and as such, it falls into th
 
 The class of complex problems lies between the class of simple and even complicated problems on one side of the spectrum, and problems that are accessible by statistical methods on the other side. Simple/complicated problems can be described by linear systems with relatively few "moving parts". They can be understood by humans. On the other hand, systems with many parts and uniform structure that behave predictable as a whole, such as gases, can be described statistically without knowing what every particle in the gas is up to.
 
-Complex systems are in the wicked middle, they are to complex to be understood fully by humans (in the sense that the outcome of parameter changes is not completely predictable) and they have to much structure to be accessible by statistical methods. Complex systems are non-linear (in software development, humans are the non-linear element), and may also be chaotic, which means that minimal changes in start conditions (the infamous butterfly effect [^butterfly]) can have huge effects in outcome. Think about a cocktail party as an analogy for software development: Even when trying to exactly reproduce a previous party (same people, music, drinks), the outcome may be completely different. Do not draw the false conclusion that you should have drinks while developing software...
+Complex systems are in the wicked middle, they are to complex to be understood fully by humans (in the sense that the outcome of parameter changes is not completely predictable) and they have to much structure to be accessible by statistical methods. Complex systems are non-linear, and may also be chaotic, which means that minimal changes in start conditions (the infamous butterfly effect [^butterfly]) can have huge effects in outcome.
 
-The reductionistic approach [^reductionism], which is prevalent in science, also does not help in the understanding of complex problems. This approach tries to explain phenomena based on their smallest basic elements. Unfortunately, one property of complex systems is that the whole is more than the sum of its elements. Those systems exhibit emergent behavior, which is not explainable by looking at the parts in isolation. For example, a human is more than a heap of atoms and biochemical reactions on microscopic level. The informaton how everything is put together and interacts (the process) constitutes the whole.
+While software is inherently deterministic, it also can show complex properties. Think of machine learning or evolutionary algorithms. However, in the software development process, humans are the non-linear element and are themselves complex systems. Think about a cocktail party as an analogy for software development: Even when trying to exactly reproduce a previous party (same people, music, drinks), the outcome may be completely different. But: dont' drink and develop.
 
-Given that the previous assessments are true, any analogy of the software development process with mechanistic systems (which belong to the class of simple/complicated) must be wrong. Trying to focus on isolated steps, trying to formalize the process, or trying to reduce it to simple numbers (performance indicators or metrics), does not respect the complex nature of the problem.
+The reductionistic approach [^reductionism], which is prevalent in science, also does not help in the understanding of complex problems. This approach tries to explain phenomena based on their smallest basic elements. Unfortunately, one property of complex systems is that the whole is more than the sum of its elements. Those systems exhibit emergent behavior, which is not explainable by looking at the parts in isolation. For example, a human is more than a heap of atoms and biochemical reactions on microscopic level. The information how everything is put together and interacts (a process) constitutes the whole.
+
+Given that the previous assessments are true, any analogy of the software development process with mechanistic systems (which belong to the class of simple/complicated) must be wrong. Trying to focus or overemphasize isolated steps, trying to formalize the process, or trying to reduce it to simple numbers (performance indicators or metrics), does not respect the complex nature of the problem.
+
+Also, if the outcome of complex processes is not predictable, no one should act as being in the possesion of a universal truth about it.
 
 
 # Humans
-motivation
+
+The previous section showed that humans are a crucial factor in software development. A necessary precondition for us to do a good job is motivation. So, what does motivate us? In psychology, there is a theory called self determination theory (SDT) [^sdt]. An accessible introduction can be found in [^drive].
+
+The basic idea of SDT is that for humans to be motivated, psychological needs must be fulfilled:
+
+* Autonomy: The liberty to take your own decisions instead of being told what to do.
+* Competence: Work on tasks where you can control the outcome, learn, achieve mastery, and get appreciation.
+* Relatedness: Interact with other people, feel connected.
+
+SDT also differentiates between intrinsic and extrinsic motivation. Intrinsic motivation, i.e. being driven by internal rewards is seen as more sustainable, and connected with self-development. Autonomy and competence are the basis for intrinsic motivation. In contrast, extrinsic motivation, i.e. driven by external influences like money or awards, ceases fast. Having mentioned money: beyond a certain increase, there is diminishing motivational gain, but getting less than co-workers for the same task, surely demotivates.
+
+Any work environment, corporate or not, should be centered around motivating people. SDT can be a guideline on how to layout that environment.
+
+While motivation is the basis, there are other factors that influence the outcome of engineering processes. One important factor is how we think, learn and make errors.
+
+skill acquisition according to https://en.wikipedia.org/wiki/Dreyfus_model_of_skill_acquisition and https://en.wikipedia.org/wiki/Four_stages_of_competence (Unconscious competence -> Gigerenzer gut feeling)
+
+https://en.wikipedia.org/wiki/Cognitive_bias and https://en.wikipedia.org/wiki/Fallacy
+
+https://en.wikipedia.org/wiki/Learning_theory_(education)
+
+Deliberate practice: https://en.wikipedia.org/wiki/Practice_(learning_method)
 
 
-# Teams
+# Work Environment
 
-self forming, no hierachy. groups made working by evolution since humans exist.
+teams, self forming, no hierarchy. groups made working by evolution since humans exist.
+
+reinventing organizations
+
+https://en.wikipedia.org/wiki/Parkinson%27s_law
 
 
 # What is Software
@@ -57,7 +88,7 @@ self forming, no hierachy. groups made working by evolution since humans exist.
 bridge
 
 
-# What is Software Enginneering
+# What is Software Engineering
 
 
 # Design & Practices
@@ -68,6 +99,11 @@ Architecture = design
 
 conways law! molly rocket
 
+the papers from parker
+
+
+# Tools
+
 
 
 # TL;DR
@@ -76,10 +112,16 @@ Key takeaways:
 
 1. Learn about the history of the field, read classic papers and books.
 2. Be skeptical about alleged truths. Most scientific results are not as solid as believed.
-3. Learn theoretical (e.g. computer science) and practical (e.g. touch typing) basics.
+3. Learn theoretical (e.g. computer science) and practical (e.g. touch typing) skills.
+4. Software engineering is a complex process, humans are the most important factor.
+5. Work environments should motivate us to do a good job (and having fun doing it).
+
 
 
 # See Also
+
+http://www.se-radio.net/2016/03/se-radio-episode-253-fred-george-on-developer-anarchy/
+https://www.youtube.com/watch?v=NP9AIUT9nos
 
 
 # References
@@ -90,7 +132,12 @@ Key takeaways:
 [^butterfly]: [Butterfly Effect](https://en.wikipedia.org/wiki/Butterfly_effect)
 [^swebok]: [Software Engineering Body of Knowledge](https://en.wikipedia.org/wiki/Software_Engineering_Body_of_Knowledge)
 [^cynefin]: [Cynefin framework](https://en.wikipedia.org/wiki/Cynefin_framework)
-[^reductionism]: [](https://en.wikipedia.org/wiki/Reductionism)
+[^reductionism]: [Reductionism](https://en.wikipedia.org/wiki/Reductionism)
+[^sdt]: [Self-Determination Theory](https://en.wikipedia.org/wiki/Self-determination_theory)
+[^drive]: [Drive: The Surprising Truth About What Motivates Us](https://www.danpink.com/books/drive/). Daniel H. Pink. 2009.
+[^weitz]: [Konkrete Mathematik (nicht nur) für Informatiker](https://link.springer.com/book/10.1007/978-3-662-62618-4). Edmund Weitz. 2021.
+
+
 
 ---
 

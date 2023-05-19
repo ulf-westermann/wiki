@@ -34,7 +34,7 @@ app = fastapi.FastAPI()
 @app.get("/api/source")
 async def get_source_files():
     """get list of source file names"""
-    return [file.name for file in _SOURCE_PATH.glob("*")]
+    return [file.name for file in _SOURCE_PATH.glob("*") if file.is_file()]
 
 
 @app.get("/api/source/{name}")

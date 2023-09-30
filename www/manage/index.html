@@ -166,22 +166,24 @@
                 const select = document.getElementById("source_select");
                 const source = select.options[select.selectedIndex].text;
 
-                try {
-                    show_source_message(`deleting source file "${source}"...`);
+                if (confirm(`delete "${source}"?`)) {
+                    try {
+                        show_source_message(`deleting source file "${source}"...`);
 
-                    response = await fetch(`/api/source/${source}`, {method: "DELETE"});
+                        response = await fetch(`/api/source/${source}`, {method: "DELETE"});
 
-                    if (response.status == 200) {
-                        show_source_message(`deleted source file "${source}"`);
+                        if (response.status == 200) {
+                            show_source_message(`deleted source file "${source}"`);
 
-                        load_source(document.getElementById("buffer_content").innerHTML);
+                            load_source(document.getElementById("buffer_content").innerHTML);
+                        }
+                        else {
+                            show_source_message(`delete source file failed (status code ${response.status}, "${response.statusText}")`);
+                        }
                     }
-                    else {
-                        show_source_message(`delete source file failed (status code ${response.status}, "${response.statusText}")`);
+                    catch (error) {
+                        show_source_message(`delete source file failed with error "${error}"`);
                     }
-                }
-                catch (error) {
-                    show_source_message(`delete source file failed with error "${error}"`);
                 }
             }
 

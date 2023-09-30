@@ -1,6 +1,6 @@
 fastapi
 uvicorn
 python-multipart
-#html-sanitizer
+beautifulsoup4
 mypy # only for development
 pylint # only for development

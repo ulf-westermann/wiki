@@ -20,8 +20,9 @@ class SourceData(pydantic.BaseModel):
 
 _SOURCE_PATH = pathlib.Path("./source")
 _WWW_PATH = pathlib.Path("./www")
-_WWW_MEDIA_PATH = _WWW_PATH / "media"
 _PLUGIN_PATH = pathlib.Path("./plugins")
+
+_WWW_MEDIA_PATH = _WWW_PATH / "media"
 
 _PANDOC_FILE_SUFFIXES = (".md", ".rst")
 _BACKUP_FILE_SUFFIX = ".bak"
@@ -30,32 +31,42 @@ _BACKUP_FILE_SUFFIX = ".bak"
 app = fastapi.FastAPI()
 
 
+def get_source_path(source_file_name: str) -> pathlib.Path:
+    """get path object of source file, raise exception if file is not located withing source directory"""
+    source_file_path = _SOURCE_PATH / source_file_name
+
+    if not source_file_path.is_relative_to(_SOURCE_PATH):
+        raise fastapi.HTTPException(status_code=403, detail="not allowed")
+
+    return source_file_path
+
+
+def get_media_path(media_file_name: str) -> pathlib.Path:
+    """get path object of media file, raise exception if file is not located withing media directory"""
+    media_file_path = _WWW_MEDIA_PATH / media_file_name
+
+    if not media_file_path.is_relative_to(_WWW_MEDIA_PATH):
+        raise fastapi.HTTPException(status_code=403, detail="not allowed")
+
+    return media_file_path
+
+
 @app.get("/api/source")
 async def get_source_files():
     """get list of source file names"""
-    return [file.name for file in _SOURCE_PATH.glob("*") if file.is_file() and file.name[0] != "."]
+    return [file.name for file in _SOURCE_PATH.glob("*") if file.is_file() and file.name[0] != "." and file.name[0] != "~"]
 
 
 @app.get("/api/source/{name}")
 async def get_source(name: str):
     """get source source for a html page"""
-    source_file_path = _SOURCE_PATH / name
-
-    if not source_file_path.is_relative_to(_SOURCE_PATH):
-        raise fastapi.HTTPException(status_code=403, detail="not allowed")
-
-    return source_file_path.read_text()
+    return get_source_path(name).read_text()
 
 
 @app.delete("/api/source/{name}")
 async def delete_source_file(name: str):
     """delete source file and corresponding html page"""
-
-    # check if source file is valid
-    source_file_path = _SOURCE_PATH / name
-
-    if not source_file_path.is_relative_to(_SOURCE_PATH):
-        raise fastapi.HTTPException(status_code=403, detail="not allowed")
+    source_file_path = get_source_path(name)
 
     www_file_path = None
 
@@ -69,9 +80,11 @@ async def delete_source_file(name: str):
     if not www_file_path.is_relative_to(_WWW_PATH):
         raise fastapi.HTTPException(status_code=403, detail="not allowed")
 
-    # delete files
+    # delete www file
     www_file_path.unlink(missing_ok=True)
-    source_file_path.unlink()
+
+    # backup source file
+    source_file_path.rename(source_file_path.parent / pathlib.Path("~" + source_file_path.name + "_" + datetime.datetime.utcnow().isoformat() + _BACKUP_FILE_SUFFIX))
 
 
 @app.put("/api/source/{name}")
@@ -79,11 +92,7 @@ async def put_source_file(name: str, source: SourceData):
     """put source file and create corresponding html page"""
     name, data = plugin.pre_put_source_file(name, source.data)
 
-    # check if source file path is valid
-    source_file_path = _SOURCE_PATH / name
-
-    if not source_file_path.is_relative_to(_SOURCE_PATH):
-        raise fastapi.HTTPException(status_code=403, detail="not allowed")
+    source_file_path = get_source_path(name)
 
     # backup old source file with same name, if present
     try:
@@ -131,13 +140,10 @@ async def upload_media_files(files: list[fastapi.UploadFile]):
 async def delete_media_file(name: str):
     """delete media file"""
     # check if media file is valid
-    file_path = _WWW_MEDIA_PATH.joinpath(name)
-
-    if not file_path.is_relative_to(_WWW_MEDIA_PATH):
-        raise fastapi.HTTPException(status_code=403, detail="not allowed")
+    media_file_path = get_media_path(name)
 
     # delete media file
-    file_path.unlink()
+    media_file_path.unlink()
 
 
 def _process_source_file(source_file_path: pathlib.Path) -> pathlib.Path:

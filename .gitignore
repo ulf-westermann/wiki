@@ -1,0 +1,8 @@
+.mypy_cache/
+source/
+__pycache__/
+venv/
+www/
+
+htpasswd
+*.pid

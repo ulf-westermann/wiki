@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# first argument of script is port number
+
 # trap is executed when shell receives any signal to stop the shell.
 # trap kills any python child processes, but they need to run in
 # background to execute the trap (otherwise the sh process is blocked).
@@ -12,7 +14,7 @@ cd /srv/ulf/wiki
 . ./venv/bin/activate
 
 # run python wiki in background
-python3.9 -m wiki &
+python3.9 -m wiki -p $1 &
 
 # get pid of last started job (python)
 pid=$!

@@ -153,8 +153,8 @@ def _process_source_file(source_file_path: pathlib.Path) -> pathlib.Path:
 
         www_file_path = _WWW_PATH.joinpath(source_file_path.stem).with_suffix(".html")
         www_file_path.write_text(html, encoding="utf-8")
-    elif source_file_path.suffix != ".backup":
-        # other files are copied to www directory
+    elif source_file_path.suffix != _BACKUP_FILE_SUFFIX:
+        # other, non-backup files are simply copied to www directory
         www_file_path = _WWW_PATH / source_file_path.name
         www_file_path.write_bytes(source_file_path.read_bytes())
 

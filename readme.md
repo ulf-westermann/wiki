@@ -24,7 +24,7 @@ start
 
 # Initial Setup
 
-Open webbrowser, navigate to `http://<wiki base url>/manage`.
+Open webbrowser, navigate to `http://<wiki base url>/manage/`.
 
 Click on "new" button.
 

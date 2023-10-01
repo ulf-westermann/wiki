@@ -2,13 +2,14 @@ import pathlib
 import urllib.parse
 import urllib.request
 import datetime
+import pytz
 
 import bs4
 
 import plugin
 
 
-print("hello from plugin1")
+print("hello from links plugin")
 
 
 class Plugin(plugin.PluginBase):
@@ -23,19 +24,23 @@ class Plugin(plugin.PluginBase):
             result = urllib.parse.urlparse(url_string)
 
             if all((result.scheme, result.netloc)):
+                timetag = datetime.datetime.now().isoformat('T', 'seconds')
+
                 try:
+                    # open url
                     with urllib.request.urlopen(urllib.request.Request(url_string, headers={"User-Agent": "Mozilla/5.0"})) as url:
+                        # parse html
                         soup = bs4.BeautifulSoup(url, features="html.parser")
-                        lines[count] = f"[{soup.title.string} <small>({result.netloc}, {datetime.datetime.utcnow().isoformat('T', 'seconds')})</small>]({url_string})<br>"
+
+                        title = soup.title.string
+                        description_tag = soup.find("meta", property="og:description")
+                        description = ", " + description_tag["content"] if description_tag else ""
+
+                        # substitute url by markdown link
+                        lines[count] = f"[{title} <small>({timetag}, {result.netloc}{description})</small>]({url_string})"
                 except Exception as exc:
                     print(exc)
-                    lines[count] = f"[{url_string}]({url_string}) <small>{datetime.datetime.utcnow().isoformat('T', 'seconds')}</small><br>"
 
         lines = "\n".join(lines)
 
         return name, lines
-
-
-    def post_put_source_file(self, source_file_path: pathlib.Path, www_file_path: pathlib.Path) -> None:
-        """Called after source files have been written and processed."""
-        print(f"plugin1. source_file_path: {source_file_path}, www_file_path: {www_file_path}")

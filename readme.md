@@ -20,3 +20,14 @@ activate wanted plugins by creating symlinks:
 start
 
     ./wiki.py
+
+
+# Initial Setup
+
+Open webbrowser, navigate to `http://<wiki base url>/manage`.
+
+Click on "new" button.
+
+Create new default page with name "index.md". Enter content in the edit field, click "save" button.
+
+If you want CSS styles, do the same for any number of "\*.css" files, which you reference from your markdown files.

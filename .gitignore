@@ -3,6 +3,7 @@ source/
 __pycache__/
 venv/
 www/
+plugins/
 
 htpasswd
 *.pid

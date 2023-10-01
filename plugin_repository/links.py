@@ -8,7 +8,7 @@ import bs4
 import plugin
 
 
-print("hello from links plugin")
+print("hello from links.py plugin")
 
 
 class Plugin(plugin.PluginBase):
@@ -31,14 +31,15 @@ class Plugin(plugin.PluginBase):
                         # parse html
                         soup = bs4.BeautifulSoup(url, features="html.parser")
 
-                        title = soup.title.string
+                        title = soup.title.string.replace("\r", " ").replace("\n", " ")
                         description_tag = soup.find("meta", property="og:description")
-                        description = ", " + description_tag["content"] if description_tag else ""
+                        description = ", " + description_tag["content"].replace("\r", " ").replace("\n", " ") if description_tag else ""
 
                         # substitute url by markdown link
                         lines[count] = f"[{title} <small>({timetag}, {result.netloc}{description})</small>]({url_string})"
                 except Exception as exc:
                     print(exc)
+                    lines[count] = f"[{url_string} <small>({timetag}, {result.netloc})</small>]({url_string})"
 
         lines = "\n".join(lines)
 

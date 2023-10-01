@@ -1,6 +1,6 @@
 # Installation
 
-make sure python3, pip, virtualenv and pandoc is installed. maybe some xml libraries also need to be installed for html sanitization.
+make sure python3, pip, virtualenv and pandoc is installed.
 
 cd into wiki directory
 
@@ -10,7 +10,13 @@ create virtual environment
     . venv/bin/activate
     python3 -m pip install -U -r requirements.txt
 
+activate wanted plugins by creating symlinks:
+
+    mkdir plugins
+    cd plugins
+    ln -s ../plugin_repository/links.py
+    cd ..
+
 start
 
     ./wiki.py
-

@@ -26,7 +26,7 @@ class Plugin(plugin.PluginBase):
                 try:
                     with urllib.request.urlopen(urllib.request.Request(url_string, headers={"User-Agent": "Mozilla/5.0"})) as url:
                         soup = bs4.BeautifulSoup(url, features="html.parser")
-                        lines[count] = f"[{soup.title.string}]({url_string}) <small>{datetime.datetime.utcnow().isoformat('T', 'seconds')}</small><br>"
+                        lines[count] = f"[{soup.title.string} <small>({result.netloc}, {datetime.datetime.utcnow().isoformat('T', 'seconds')})</small>]({url_string})<br>"
                 except Exception as exc:
                     print(exc)
                     lines[count] = f"[{url_string}]({url_string}) <small>{datetime.datetime.utcnow().isoformat('T', 'seconds')}</small><br>"

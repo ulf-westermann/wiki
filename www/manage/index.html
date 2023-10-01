@@ -74,7 +74,7 @@
 
                         json_response.sort();
 
-                        let options = "";
+			    let options = "<option disabled selected value>-- select a file --</option>";
 
                         for (let i = 0; i< json_response.length; i++) {
                             options += `<option>${json_response[i]}</option>`;

@@ -2,7 +2,6 @@ import pathlib
 import urllib.parse
 import urllib.request
 import datetime
-import pytz
 
 import bs4
 

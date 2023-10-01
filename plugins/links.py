@@ -17,13 +17,19 @@ class Plugin(plugin.PluginBase):
         lines = data.split("\n")
 
         for count, line in enumerate(lines):
+            url_string = line.strip()
+
             # check if line contains a url
-            result = urllib.parse.urlparse(line)
+            result = urllib.parse.urlparse(url_string)
 
             if all((result.scheme, result.netloc)):
-                with urllib.request.urlopen(line) as url:
-                    soup = bs4.BeautifulSoup(url)
-                    lines[count] = f"[{soup.title.string}]({line}) <small>{datetime.datetime.utcnow().isoformat('T', 'seconds')}</small><br>"
+                try:
+                    with urllib.request.urlopen(urllib.request.Request(url_string, headers={"User-Agent": "Mozilla/5.0"})) as url:
+                        soup = bs4.BeautifulSoup(url, features="html.parser")
+                        lines[count] = f"[{soup.title.string}]({url_string}) <small>{datetime.datetime.utcnow().isoformat('T', 'seconds')}</small><br>"
+                except Exception as exc:
+                    print(exc)
+                    lines[count] = f"[{url_string}]({url_string}) <small>{datetime.datetime.utcnow().isoformat('T', 'seconds')}</small><br>"
 
         lines = "\n".join(lines)
 

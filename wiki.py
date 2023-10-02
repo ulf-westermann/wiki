@@ -203,6 +203,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # start uvicorn webserver with reference to fastapi app
-    config = uvicorn.Config("wiki:app", host=args.ip, port=args.port, log_level="info")
+    config = uvicorn.Config("wiki:app", host=args.ip, port=args.port, log_level="debug")
     server = uvicorn.Server(config)
     server.run()

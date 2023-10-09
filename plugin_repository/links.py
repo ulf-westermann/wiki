@@ -27,13 +27,14 @@ class Plugin(plugin.PluginBase):
 
                 try:
                     # open url
-                    with urllib.request.urlopen(urllib.request.Request(url_string, headers={"User-Agent": "Mozilla/5.0"})) as url:
+                    with urllib.request.urlopen(urllib.request.Request(url_string, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246"})) as url:
                         # parse html
                         soup = bs4.BeautifulSoup(url, features="html.parser")
 
-                        title = soup.title.string.replace("\r", " ").replace("\n", " ")
+                        title = soup.title.string.replace("\r", " ").replace("\n", " ").strip()
+
                         description_tag = soup.find("meta", property="og:description")
-                        description = ", " + description_tag["content"].replace("\r", " ").replace("\n", " ") if description_tag else ""
+                        description = ", " + description_tag["content"].replace("\r", " ").replace("\n", " ").strip() if description_tag else ""
 
                         # substitute url by markdown link
                         lines[count] = f"[{title} <small>({timetag}, {result.netloc}{description})</small>]({url_string})"

@@ -17,7 +17,7 @@ activate wanted plugins by creating symlinks:
     ln -s ../plugin_repository/links.py
     cd ..
 
-start
+start (manually / for development)
 
     ./wiki.py
 
@@ -28,6 +28,19 @@ Open webbrowser, navigate to `http://<wiki base url>/manage/`.
 
 Click on "new" button.
 
-Create new default page with name "index.md". Enter content in the edit field, click "save" button.
+Create new default page with name "index.md". Enter content in the edit field, click "store" button.
 
 If you want CSS styles, do the same for any number of "\*.css" files, which you reference from your markdown files.
+
+
+# Update
+
+cd into wiki directory (as 'freebsd' user)
+
+    git pull
+    su
+    service wikixxx stop
+    service wikixxx start
+
+where 'xxx' is 'ulf' or 'reine' respectively
+

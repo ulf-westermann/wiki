@@ -12,10 +12,10 @@
         <p>
             <button id="new_source_button">new</button> |
             <select id="source_select"></select> 
-            <button id="edit_source_button">edit</button>
-            <button id="save_source_button">save</button>
+            <button id="load_source_button">load</button>
+            <button id="store_source_button">store</button>
             <button id="delete_source_button">delete</button>
-            <button id="open_html_button">open</button>
+            <button id="view_html_button">view</button>
 	    </p>
 
         <p><small><span id="source_message">&nbsp</span></small></p>
@@ -34,20 +34,20 @@
             <button id="upload_media_button">upload</button> |
             <select id="media_select"></select> 
             <button id="delete_media_button">delete</button>
-            <button id="open_media_button">open</button>
+            <button id="view_media_button">view</button>
         </p>
 
         <p><small><span id="media_message"></span></small></p>
 
         <script>
             document.getElementById("new_source_button").addEventListener("click", new_source);
-            document.getElementById("edit_source_button").addEventListener("click", edit_source);
+            document.getElementById("load_source_button").addEventListener("click", load_source);
             document.getElementById("delete_source_button").addEventListener("click", delete_source);
-            document.getElementById("save_source_button").addEventListener("click", save_source);
-            document.getElementById("open_html_button").addEventListener("click", open_html);
+            document.getElementById("store_source_button").addEventListener("click", store_source);
+            document.getElementById("view_html_button").addEventListener("click", view_html);
             document.getElementById("upload_media_button").addEventListener("click", upload_media);
             document.getElementById("delete_media_button").addEventListener("click", delete_media);
-            document.getElementById("open_media_button").addEventListener("click", open_media);
+            document.getElementById("view_media_button").addEventListener("click", view_media);
 
             window.onload = initialize();
 
@@ -55,16 +55,16 @@
             function initialize() {
                 console.log("initialize() called...");
 
-                load_source();
-                load_media();
+                load_source_file_list();
+                load_media_file_list();
 
                 document.getElementById("edit_field").value = "";
                 document.getElementById("buffer_content").innerHTML = ""
             }
 
             // load list of source files and populate select box
-            async function load_source(select_option) {
-                console.log("load_source() called...");
+            async function load_source_file_list(select_option) {
+                console.log("load_source_file_list() called...");
 
                 try {
                     const response = await fetch("/api/source");
@@ -74,7 +74,7 @@
 
                         json_response.sort();
 
-			    let options = "<option disabled selected value>-- select a file --</option>";
+		        let options = "<option disabled selected value>-- select a file --</option>";
 
                         for (let i = 0; i< json_response.length; i++) {
                             options += `<option>${json_response[i]}</option>`;
@@ -94,10 +94,10 @@
                         }
                     }
                     else {
-                        show_source_message(`load source files failed (status code ${response.status}, "${response.statusText}")`);
+                        show_source_message(`load source file list failed (status code ${response.status}, "${response.statusText}")`);
                     }
                 } catch (error) {
-                    show_source_message(`load source files failed with error "${error}"`);
+                    show_source_message(`load source file list failed with error "${error}"`);
                 }
             }
 
@@ -118,7 +118,7 @@
                         if (response.status == 200) {
                             show_source_message(`created new source file "${source}"`);
 
-                            load_source(document.getElementById("buffer_content").innerHTML);
+                            load_source_file_list(document.getElementById("buffer_content").innerHTML);
                         }
                         else {
                             show_source_message(`create new source file failed (status code ${response.status}, "${response.statusText}")`);
@@ -130,9 +130,9 @@
                 }
             }
 
-            // edit source file currently active in select box
-            async function edit_source() {
-                console.log("edit_source() called...");
+            // load source file currently active in select box
+            async function load_source() {
+                console.log("load_source() called...");
 
                 const select = document.getElementById("source_select");
                 const source = select.options[select.selectedIndex].text;
@@ -151,11 +151,11 @@
                         document.getElementById("buffer_content").innerHTML = source;
                     }
                     else {
-                        show_source_message(`edit source file failed (status code ${response.status}, "${response.statusText}")`);
+                        show_source_message(`load source file failed (status code ${response.status}, "${response.statusText}")`);
                     }
                 }
                 catch (error) {
-                    show_source_message(`edit source file failed with error "${error}"`);
+                    show_source_message(`load source file failed with error "${error}"`);
                 }
             }
 
@@ -175,7 +175,7 @@
                         if (response.status == 200) {
                             show_source_message(`deleted source file "${source}"`);
 
-                            load_source(document.getElementById("buffer_content").innerHTML);
+                            load_source_file_list(document.getElementById("buffer_content").innerHTML);
                         }
                         else {
                             show_source_message(`delete source file failed (status code ${response.status}, "${response.statusText}")`);
@@ -188,8 +188,8 @@
             }
 
             // save edited source file with name currently active in select box
-            async function save_source() {
-                console.log("save_source() called...");
+            async function store_source() {
+                console.log("store_source() called...");
 
                 const select = document.getElementById("source_select");
                 const source = select.options[select.selectedIndex].text;
@@ -202,25 +202,25 @@
                     const response = await fetch(`/api/source/${source}`, {method: "PUT", headers: {"content-type": "application/json"}, body: json_source_data});
 
                     if (response.status == 200) {
-                        show_source_message(`saved source file as "${source}"`);
+                        show_source_message(`stored source file as "${source}"`);
 
-                        load_source(document.getElementById("buffer_content").innerHTML);
+                        load_source_file_list(document.getElementById("buffer_content").innerHTML);
 
                         const json_response = await response.json(); // should return a string
                         document.getElementById("edit_field").value = json_response;
                     }
                     else {
-                        show_source_message(`save source file failed (status code ${response.status}, "${response.statusText}")`);
+                        show_source_message(`store source file failed (status code ${response.status}, "${response.statusText}")`);
                     }
                 }
                 catch (error) {
-                    show_source_message(`save source file failed with error "${error}"`);
+                    show_source_message(`store source file failed with error "${error}"`);
                 }
             }
 
             // open html page corresponding to currently active source file in select box
-            function open_html() {
-                console.log("open_html() called...");
+            function view_html() {
+                console.log("view_html() called...");
 
                 const select = document.getElementById("source_select");
                 const source = select.options[select.selectedIndex].text;
@@ -242,8 +242,8 @@
             }
 
             // load list of media files and populate select box
-            async function load_media() {
-                console.log("load_media() called...");
+            async function load_media_file_list() {
+                console.log("load_media_file_list() called...");
 
                 try {
                     const response = await fetch("/api/media");
@@ -262,11 +262,11 @@
                         document.getElementById("media_select").innerHTML = options;
                     }
                     else {
-                        show_media_message(`load media files failed (status code ${response.status}, "${response.statusText}")`);
+                        show_media_message(`load media file list failed (status code ${response.status}, "${response.statusText}")`);
                     }
 
                 } catch (error) {
-                    show_media_message(`load media files failed with error "${error}"`);
+                    show_media_message(`load media file list failed with error "${error}"`);
                 }
             }
 
@@ -295,7 +295,7 @@
                     if (response.status == 200) {
                         show_media_message("uploaded media file(s):" + message_string);
 
-                        load_media();
+                        load_media_file_list();
                     }
                     else {
                         show_media_message(`upload media files failed (status code ${response.status}, "${response.statusText}")`);
@@ -321,7 +321,7 @@
                     if (response.status == 200) {
                         show_media_message(`deleted media file "${source}"`);
 
-                        load_media();
+                        load_media_file_list();
                     }
                     else {
                         show_media_message(`delete media file failed (status code ${response.status}, "${response.statusText}")`);
@@ -333,8 +333,8 @@
             }
 
             // open media corresponding to currently active media file in select box
-            function open_media() {
-                console.log("open_media() called...");
+            function view_media() {
+                console.log("view_media() called...");
 
                 const select = document.getElementById("media_select");
                 const media = select.options[select.selectedIndex].text;

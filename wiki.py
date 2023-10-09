@@ -195,6 +195,7 @@ plugin.load(_PLUGIN_PATH, _SOURCE_PATH, _WWW_PATH, _WWW_MEDIA_PATH)
 # make fastapi serve static (html) files
 app.mount("/", fastapi.staticfiles.StaticFiles(directory=_WWW_PATH, html=True), name="www")
 
+
 if __name__ == "__main__":
     # parse command line arguments
     parser = argparse.ArgumentParser(description="pandoc based wiki")

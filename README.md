@@ -1,11 +1,11 @@
 # Wiki
 
-A minimalist (and ugly) personal wiki/content management system. It contains it own integrated webserver, but it is recommended to use a reverse proxy if it is exposed to the public internet. Websites are written in [Pandoc](https://pandoc.org/MANUAL.html#pandocs-markdown) markdown.
+A minimalist (and ugly) personal wiki/content management system. It contains its own integrated webserver, but I recommended to use a reverse proxy if it is exposed to the public internet. Websites are written in [Pandoc](https://pandoc.org/MANUAL.html#pandocs-markdown) markdown.
 
 
 ## Installation
 
-Make sure Python3, pip, virtualenv and pandoc is installed.
+Make sure Python3, pip, virtualenv and Pandoc is installed.
 
 cd into wiki directory
 
